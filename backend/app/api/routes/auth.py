@@ -29,6 +29,7 @@ def signup(
     response = signup_service(user,db)
 
     print("user created successfully")
+    print("user creatted")
     return {
         "success": True,
         "message": "User created successfully",
