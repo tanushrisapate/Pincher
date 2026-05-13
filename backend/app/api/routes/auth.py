@@ -24,11 +24,28 @@ def signup(
     user: SignupSchema,
     db: Session = Depends(get_db)
 ):
-    return signup_service(user, db)
+    print("Singup API called")
+
+    response = signup_service(user,db)
+
+    print("user created successfully")
+    return {
+        "success": True,
+        "message": "User created successfully",
+        "data": response
+    }   
 
 @router.post("/login")
 def login(
     user: LoginSchema,
     db: Session = Depends(get_db)
 ):
-    return login_service(user, db)
+    print("Login API called")
+
+    response = login_service(user, db)
+
+    return {
+        "success": True,
+        "message": "Login successful",
+        "data": response
+    }

@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link,useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles, TrendingUp, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { stats, recentPredictions, galleryImages, celebrities } from "@/lib/mock-data";
 import { ColorPalette } from "@/components/ui-kit/ColorPalette";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
+
+
 
 export const Route = createFileRoute("/app/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Atelier AI" }] }),
@@ -29,6 +31,15 @@ function Counter({ value }: { value: number }) {
 }
 
 function Dashboard() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if(!token){
+      navigate({to: "/login"});
+    }
+  })
   return (
     <div className="space-y-8">
       {/* Hero */}

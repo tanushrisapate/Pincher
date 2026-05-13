@@ -11,11 +11,44 @@ export const Route = createFileRoute("/register")({
 
 function Register() {
   const [loading, setLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
-    setTimeout(() => navigate({ to: "/app/dashboard" }), 900);
+    try{
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/auth/signup",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          body: JSON.stringify({
+            username,
+            email,
+            password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if(response.ok){
+        navigate({ to: "/app/dashboard"});
+      }
+    } catch (error){
+      console.log(error);
+    }
+    setLoading(false);
   };
 
   return (
@@ -30,18 +63,38 @@ function Register() {
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="font-display text-lg">Atelier AI</span>
+            <span className="font-display text-lg">Pincher</span>
           </Link>
           <h1 className="font-display text-4xl">Begin your atelier</h1>
-          <p className="mt-2 text-muted-foreground">Create your free account — no card required.</p>
+          <p className="mt-2 text-muted-foreground">Create your free account</p>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <Row>
-              <Field icon={User} label="First name" placeholder="Ava" />
-              <Field icon={User} label="Last name" placeholder="Laurent" />
+              <Field
+                  icon={User}
+                  label="Username"
+                  placeholder="tanushri"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                />
             </Row>
-            <Field icon={Mail} type="email" label="Email" placeholder="you@atelier.ai" />
-            <Field icon={Lock} type="password" label="Password" placeholder="At least 8 characters" />
+            <Field
+              icon={Mail}
+              type="email"
+              label="Email"
+              placeholder="you@atelier.ai"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+
+            <Field
+              icon={Lock}
+              type="password"
+              label="Password"
+              placeholder="At least 8 characters"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
 
             <label className="flex items-start gap-2 text-xs text-muted-foreground">
               <input type="checkbox" defaultChecked className="mt-0.5 accent-foreground" />

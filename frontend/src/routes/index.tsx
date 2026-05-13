@@ -9,6 +9,8 @@ import { Footer } from "@/components/layout/Footer";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
 import { FashionCard } from "@/components/ui-kit/FashionCard";
 import { celebrities, galleryImages } from "@/lib/mock-data";
+import { useEffect } from "react";
+import api from "@/lib/api";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -28,6 +30,15 @@ const fade = {
 } as const;
 
 function Landing() {
+  useEffect(() => {
+  api.get("/")
+    .then((res) => {
+      console.log(res.data);
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+  }, []);
   return (
     <div className="overflow-hidden">
       <Navbar />

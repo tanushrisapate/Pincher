@@ -12,15 +12,53 @@ export const Route = createFileRoute("/login")({
 function Login() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [email , setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const navigate = useNavigate();
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      navigate({ to: "/app/dashboard" });
-    }, 900);
+    try{
+      const response = await fetch(
+        "http://127.0.0.1:8000/auth/login",
+        {
+          method: "POST",
+
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email,password,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      console.log(data);
+
+      if(response.ok){
+        console.log("Login Sucess")
+        console.log(data);
+        
+        localStorage.setItem(
+          "token",
+          data.data.access_token || data.data?.access_token
+        );
+        
+        navigate({to: "/app/dashboard"});
+      }else{
+        alert(data.detail);
+      }
+    }catch(error){
+      console.log(error);
+    }
+    
+    setLoading(false);
+      
   };
 
   return (
@@ -38,7 +76,7 @@ function Login() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="font-display text-xl">Atelier AI</span>
+            <span className="font-display text-xl">Pincher</span>
           </Link>
           <div>
             <p className="font-display text-4xl leading-snug text-balance">
@@ -61,19 +99,28 @@ function Login() {
               <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
                 <Sparkles className="h-4 w-4" />
               </span>
-              <span className="font-display text-lg">Atelier AI</span>
+              <span className="font-display text-lg">Pincher</span>
             </Link>
           </div>
           <h1 className="font-display text-4xl">Welcome back</h1>
           <p className="mt-2 text-muted-foreground">Sign in to continue your style journey.</p>
 
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
-            <Field icon={Mail} type="email" label="Email" placeholder="you@atelier.ai" />
+            <Field
+              icon={Mail}
+              type="email"
+              label="Email"
+              placeholder="you@atelier.ai"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
             <Field
               icon={Lock}
               type={show ? "text" : "password"}
               label="Password"
               placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               right={
                 <button type="button" onClick={() => setShow((s) => !s)} className="text-muted-foreground hover:text-foreground">
                   {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
