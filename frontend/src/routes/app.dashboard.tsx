@@ -32,6 +32,10 @@ function Counter({ value }: { value: number }) {
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [user, setUser] = useState({
+  username: "",
+  
+  });
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,7 +43,32 @@ function Dashboard() {
     if(!token){
       navigate({to: "/login"});
     }
-  })
+     const fetchUser = async () => {
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/users/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      setUser({
+        username: data.username,
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchUser();
+  },[]);
   return (
     <div className="space-y-8">
       {/* Hero */}
@@ -49,7 +78,7 @@ function Dashboard() {
             <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs">
               <Sparkles className="h-3 w-3" /> Daily edit
             </span>
-            <h1 className="mt-3 font-display text-4xl md:text-5xl">Good morning, Ava ✶</h1>
+            <h1 className="mt-3 font-display text-4xl md:text-5xl">Good morning , {user.username} ✶</h1>
             <p className="mt-2 text-primary-foreground/80">
               Your latest aesthetic is <strong>Quiet Luxury</strong>. Ready to refine it further?
             </p>

@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
 
 export const Route = createFileRoute("/app/settings")({
@@ -44,6 +44,40 @@ function Settings() {
   const [push, setPush] = useState(false);
   const [pub, setPub] = useState(true);
 
+  const [user, setUser] = useState({
+    username: "",
+    email: "",
+  });
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const response = await fetch(
+          "http://127.0.0.1:8000/users/me",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = await response.json();
+
+        setUser({
+          username: data.username,
+          email: data.email,
+        });
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+
   return (
     <div className="max-w-3xl space-y-8">
       <div>
@@ -53,11 +87,24 @@ function Settings() {
 
       <Section title="Account">
         <Row label="Display name">
-          <input defaultValue="Ava Laurent" className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40" />
-        </Row>
-        <Row label="Email">
-          <input defaultValue="ava@atelier.ai" className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40" />
-        </Row>
+          <input
+            value={user.username}
+            onChange={(e) =>
+              setUser({ ...user, username: e.target.value })
+              }
+              className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
+             />
+          </Row>
+
+          <Row label="Email">
+            <input
+              value={user.email}
+              onChange={(e) =>
+                setUser({ ...user, email: e.target.value })
+              }
+              className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
+            />
+          </Row>
       </Section>
 
       <Section title="Notifications">

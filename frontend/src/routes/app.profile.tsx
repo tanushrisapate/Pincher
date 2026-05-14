@@ -2,13 +2,51 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Award, Edit3, MapPin } from "lucide-react";
 import { galleryImages } from "@/lib/mock-data";
 import { ColorPalette } from "@/components/ui-kit/ColorPalette";
+import { useEffect,useState } from "react";
 
 export const Route = createFileRoute("/app/profile")({
-  head: () => ({ meta: [{ title: "Profile — Atelier AI" }] }),
+  head: () => ({ meta: [{ title: "Profile — Pincher" }] }),
   component: Profile,
 });
 
 function Profile() {
+    const [user,setUser] = useState({
+      username: "",
+      email: "",
+    });
+    useEffect(() => {
+
+  const fetchUser = async () => {
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/users/me",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      setUser({
+        username: data.username,
+        email: data.email,
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchUser();
+
+}, []);
+
   return (
     <div className="space-y-8">
       {/* Cover */}
@@ -17,14 +55,14 @@ function Profile() {
         <div className="absolute inset-0 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      <div className="-mt-20 grid gap-6 lg:grid-cols-3">
+      <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Profile card */}
-        <div className="rounded-3xl border border-border bg-card p-6 shadow-elegant text-center">
+        <div className="relative rounded-3xl border border-border bg-card pt-22 pb-6 px-6 shadow-elegant text-center">
           <div className="mx-auto -mt-16 grid h-24 w-24 place-items-center rounded-full bg-gradient-primary text-primary-foreground font-display text-3xl ring-4 ring-background">
-            AV
+            {user.username?.charAt(0).toUpperCase()}
           </div>
-          <h2 className="mt-4 font-display text-2xl">Ava Laurent</h2>
-          <p className="text-sm text-muted-foreground">@ava.laurent</p>
+          <h2 className="mt-4 font-display text-2xl">{user.username}</h2>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
           <p className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground">
             <MapPin className="h-3 w-3" /> Paris, France
           </p>

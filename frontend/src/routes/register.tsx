@@ -126,7 +126,7 @@ function Register() {
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-white/15 backdrop-blur">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="font-display text-xl">Atelier AI</span>
+            <span className="font-display text-xl">Pincher</span>
           </Link>
           <div>
             <p className="font-display text-4xl leading-snug text-balance">
