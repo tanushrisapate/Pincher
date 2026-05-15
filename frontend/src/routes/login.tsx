@@ -3,9 +3,10 @@ import { motion } from "framer-motion";
 import { ArrowRight, Eye, EyeOff, Mail, Lock, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
+import { useAuth } from "@/context/AuthContext";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Sign in — Atelier AI" }] }),
+  head: () => ({ meta: [{ title: "Sign in — Pincher" }] }),
   component: Login,
 });
 
@@ -14,53 +15,54 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const [email , setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { login } = useAuth();
 
   const navigate = useNavigate();
 
   const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setLoading(true);
-    try{
-      const response = await fetch(
-        "http://127.0.0.1:8000/auth/login",
-        {
-          method: "POST",
+  setLoading(true);
 
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            email,password,
-          }),
-        }
-      );
-
-      const data = await response.json();
-
-      console.log(data);
-
-      if(response.ok){
-        console.log("Login Sucess")
-        console.log(data);
-        
-        localStorage.setItem(
-          "token",
-          data.data.access_token || data.data?.access_token
-        );
-        
-        navigate({to: "/app/dashboard"});
-      }else{
-        alert(data.detail);
+  try {
+    const response = await fetch(
+      "http://127.0.0.1:8000/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       }
-    }catch(error){
-      console.log(error);
-    }
-    
-    setLoading(false);
-      
-  };
+    );
 
+    const data = await response.json();
+
+    console.log(data);
+
+    if (response.ok) {
+      const token = data.data.access_token;
+
+      const user = {
+        email,
+        username: email.split("@")[0],
+      };
+
+      login(token, user);
+
+      navigate({ to: "/app/dashboard" });
+    } else {
+      alert(data.detail || "Login failed");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+
+  setLoading(false);
+};
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       {/* Left: visual */}
