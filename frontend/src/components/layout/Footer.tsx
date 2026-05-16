@@ -10,16 +10,16 @@ export function Footer() {
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-gradient-primary text-primary-foreground">
               <Sparkles className="h-4 w-4" />
             </span>
-            <span className="font-display text-lg">Atelier AI</span>
+            <span className="font-display text-lg">Pincher</span>
           </Link>
           <p className="mt-4 max-w-xs text-sm text-muted-foreground">
-            The AI atelier for your personal style. Discover, define, and refine your fashion identity.
+            A simple place to check outfits, save style notes, and build better looks over time.
           </p>
         </div>
         {[
-          { title: "Product", items: ["Features", "Pricing", "Changelog", "Roadmap"] },
-          { title: "Company", items: ["About", "Press", "Careers", "Contact"] },
-          { title: "Resources", items: ["Blog", "Lookbook", "Help center", "Privacy"] },
+          { title: "Product", items: ["Features", "Upload", "Dashboard", "Saved looks"] },
+          { title: "Account", items: ["Profile", "Settings", "Privacy", "Support"] },
+          { title: "Resources", items: ["Style notes", "Lookbook", "Help center", "Feedback"] },
         ].map((col) => (
           <div key={col.title}>
             <h4 className="font-display text-base">{col.title}</h4>
@@ -33,7 +33,7 @@ export function Footer() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-6 md:flex-row">
-          <p className="text-xs text-muted-foreground">Â© {new Date().getFullYear()} Atelier AI. Crafted with care.</p>
+          <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Pincher. Built for everyday outfit decisions.</p>
           <div className="flex gap-4 text-muted-foreground">
             <Instagram className="h-4 w-4 hover:text-foreground transition cursor-pointer" />
             <Twitter className="h-4 w-4 hover:text-foreground transition cursor-pointer" />
@@ -44,3 +44,4 @@ export function Footer() {
     </footer>
   );
 }
+

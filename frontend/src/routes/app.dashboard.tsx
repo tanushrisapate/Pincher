@@ -2,14 +2,14 @@ import { createFileRoute, Link,useNavigate } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { ArrowUpRight, Sparkles, TrendingUp, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { stats, recentPredictions, galleryImages, celebrities } from "@/lib/mock-data";
+import { overviewStats, recentLooks, moodboardImages, styleReferences } from "@/lib/style-data";
 import { ColorPalette } from "@/components/ui-kit/ColorPalette";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
 
 
 
 export const Route = createFileRoute("/app/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Atelier AI" }] }),
+  head: () => ({ meta: [{ title: "Dashboard - Pincher" }] }),
   component: Dashboard,
 });
 
@@ -62,8 +62,8 @@ function Dashboard() {
         username: data.username,
       });
 
-    } catch (error) {
-      console.log(error);
+    } catch {
+      navigate({ to: "/login" });
     }
   };
 
@@ -76,11 +76,11 @@ function Dashboard() {
         <div className="flex flex-wrap items-center justify-between gap-6">
           <div className="max-w-xl">
             <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs">
-              <Sparkles className="h-3 w-3" /> Daily edit
+              <Sparkles className="h-3 w-3" /> Today
             </span>
-            <h1 className="mt-3 font-display text-4xl md:text-5xl">Good morning , {user.username} ✶</h1>
+            <h1 className="mt-3 font-display text-4xl md:text-5xl">Good morning, {user.username || "there"}</h1>
             <p className="mt-2 text-primary-foreground/80">
-              Your latest aesthetic is <strong>Quiet Luxury</strong>. Ready to refine it further?
+              Your recent checks point toward <strong>quiet luxury</strong>. Add another outfit when you are ready.
             </p>
           </div>
           <GradientButton to="/app/upload" variant="gold" size="lg">
@@ -91,7 +91,7 @@ function Dashboard() {
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {stats.map((s, i) => (
+        {overviewStats.map((s, i) => (
           <motion.div
             key={s.label}
             initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
@@ -104,7 +104,7 @@ function Dashboard() {
             </div>
             <p className="mt-3 font-display text-4xl"><Counter value={s.value} /></p>
             <p className="mt-1 inline-flex items-center gap-1 text-xs text-foreground/70">
-              <TrendingUp className="h-3 w-3" /> +12% this week
+              <TrendingUp className="h-3 w-3" /> Updated this week
             </p>
           </motion.div>
         ))}
@@ -120,7 +120,7 @@ function Dashboard() {
             </Link>
           </div>
           <div className="mt-6 grid gap-4 sm:grid-cols-3">
-            {recentPredictions.map((p) => (
+            {recentLooks.map((p) => (
               <div key={p.id} className="group overflow-hidden rounded-2xl bg-secondary">
                 <div className="aspect-[4/5] overflow-hidden">
                   <img src={p.img} alt={p.aesthetic} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -136,8 +136,8 @@ function Dashboard() {
         </div>
 
         <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-          <h2 className="font-display text-2xl">Trend pulse</h2>
-          <p className="text-xs text-muted-foreground">This week in fashion</p>
+          <h2 className="font-display text-2xl">Style notes</h2>
+          <p className="text-xs text-muted-foreground">Current outfit ideas</p>
           <ul className="mt-5 space-y-4">
             {[
               { t: "Cocoa & cream", v: 87 },
@@ -161,7 +161,7 @@ function Dashboard() {
         <div className="lg:col-span-2 rounded-3xl border border-border bg-card p-6 shadow-soft">
           <h2 className="font-display text-2xl">Your moodboard</h2>
           <div className="mt-5 grid grid-cols-3 gap-3">
-            {galleryImages.map((g) => (
+            {moodboardImages.map((g) => (
               <div key={g} className="aspect-square overflow-hidden rounded-2xl bg-secondary">
                 <img src={g} alt="" className="h-full w-full object-cover hover:scale-105 transition-transform duration-700" />
               </div>
@@ -169,9 +169,9 @@ function Dashboard() {
           </div>
         </div>
         <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
-          <h2 className="font-display text-2xl">Style icons matched</h2>
+          <h2 className="font-display text-2xl">Style references</h2>
           <ul className="mt-5 space-y-4">
-            {celebrities.slice(0, 4).map((c) => (
+            {styleReferences.slice(0, 4).map((c) => (
               <li key={c.id} className="flex items-center gap-3">
                 <img src={c.img} alt={c.name} className="h-12 w-12 rounded-full object-cover" />
                 <div className="flex-1">
@@ -187,3 +187,5 @@ function Dashboard() {
     </div>
   );
 }
+
+

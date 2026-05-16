@@ -1,5 +1,5 @@
 {
-  "name": "tanstack_start_ts",
+  "name": "pincher",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -69,9 +69,7 @@
     "zod": "^3.24.2"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
-    "@lovable.dev/vite-tanstack-config": "^1.5.1",
-    "@types/node": "^22.16.5",
+    "@eslint/js": "^9.32.0",    "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^5.0.4",
@@ -87,3 +85,5 @@
     "vite": "^7.3.1"
   }
 }
+
+

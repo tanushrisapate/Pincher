@@ -7,7 +7,7 @@ const links = [
   { to: "/", label: "Home" },
   { to: "/#features", label: "Features" },
   { to: "/#how", label: "How it works" },
-  { to: "/#testimonials", label: "Stories" },
+  
 ];
 
 export function Navbar() {
@@ -57,7 +57,7 @@ export function Navbar() {
           </span>
 
           <span className="font-display text-lg tracking-tight">
-            Pincher AI
+            Pincher
           </span>
         </Link>
 

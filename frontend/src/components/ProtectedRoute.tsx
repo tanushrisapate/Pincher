@@ -8,15 +8,20 @@ export default function ProtectedRoute({
 }) {
   const { token, loading } = useAuth();
 
-  // wait until localStorage check finishes
+  // wait until auth check finishes
   if (loading) {
-    return ;
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
   }
 
-  // if no token -> redirect
+  // no token -> redirect to login
   if (!token) {
     return <Navigate to="/login" />;
   }
 
+  // authenticated
   return <>{children}</>;
 }

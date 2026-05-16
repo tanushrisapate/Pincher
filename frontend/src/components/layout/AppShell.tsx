@@ -8,7 +8,7 @@ import { useState } from "react";
 const nav = [
   { to: "/app/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/app/upload", label: "Upload", icon: Upload },
-  { to: "/app/results", label: "AI Results", icon: BarChart3 },
+  { to: "/app/results", label: "Results", icon: BarChart3 },
   { to: "/app/saved", label: "Saved", icon: Bookmark },
   { to: "/app/profile", label: "Profile", icon: User },
   { to: "/app/settings", label: "Settings", icon: Settings },
@@ -60,11 +60,11 @@ export function AppShell() {
 
         <div className="absolute inset-x-3 bottom-4">
           <div className="rounded-2xl bg-secondary p-4">
-            <p className="font-display text-sm">Upgrade to Couture</p>
-            <p className="mt-1 text-xs text-muted-foreground">Unlimited AI predictions & exports.</p>
+            <p className="font-display text-sm">Pincher Plus</p>
+            <p className="mt-1 text-xs text-muted-foreground">More saved looks and export options.</p>
             <button className="mt-3 w-full rounded-full bg-foreground py-2 text-xs text-background">Upgrade</button>
           </div>
-        </div>     {/*add upgrade title link*/}
+        </div>
       </aside>
 
       {/* Main */}
@@ -100,3 +100,4 @@ export function AppShell() {
     </div>
   );
 }
+

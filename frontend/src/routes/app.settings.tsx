@@ -1,24 +1,45 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+
 import { GradientButton } from "@/components/ui-kit/GradientButton";
+import { useAuth } from "@/context/AuthContext";
 
 export const Route = createFileRoute("/app/settings")({
-  head: () => ({ meta: [{ title: "Settings — Atelier AI" }] }),
+  head: () => ({ meta: [{ title: "Settings - Pincher" }] }),
   component: Settings,
 });
 
-function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void }) {
+function Toggle({
+  on,
+  onChange,
+}: {
+  on: boolean;
+  onChange: (v: boolean) => void;
+}) {
   return (
     <button
+      type="button"
       onClick={() => onChange(!on)}
-      className={`relative h-6 w-11 rounded-full transition ${on ? "bg-foreground" : "bg-border"}`}
+      className={`relative h-6 w-11 rounded-full transition ${
+        on ? "bg-foreground" : "bg-border"
+      }`}
     >
-      <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-background transition ${on ? "left-[1.4rem]" : "left-0.5"}`} />
+      <span
+        className={`absolute top-0.5 h-5 w-5 rounded-full bg-background transition ${
+          on ? "left-[1.4rem]" : "left-0.5"
+        }`}
+      />
     </button>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
       <h3 className="font-display text-xl">{title}</h3>
@@ -27,7 +48,15 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Row({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="flex items-center justify-between gap-6">
       <div>
@@ -40,87 +69,120 @@ function Row({ label, hint, children }: { label: string; hint?: string; children
 }
 
 function Settings() {
+  const { user, updateUser } = useAuth();
+
   const [emails, setEmails] = useState(true);
   const [push, setPush] = useState(false);
   const [pub, setPub] = useState(true);
 
-  const [user, setUser] = useState({
-    username: "",
-    email: "",
-  });
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const token = localStorage.getItem("token");
+    if (user) {
+      setUsername(user.username || "");
+      setEmail(user.email || "");
+    }
+  }, [user]);
 
-        const response = await fetch(
-          "http://127.0.0.1:8000/users/me",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+  const saveAccount = async () => {
+    const nextUsername = username.trim();
 
-        const data = await response.json();
+    if (!nextUsername) {
+      setError("Username cannot be empty.");
+      setMessage("");
+      return;
+    }
 
-        setUser({
-          username: data.username,
-          email: data.email,
-        });
-      } catch (error) {
-        console.log(error);
-      }
-    };
+    setSaving(true);
+    setError("");
+    setMessage("");
 
-    fetchUser();
-  }, []);
-
+    try {
+      await updateUser({ username: nextUsername });
+      setUsername(nextUsername);
+      setMessage("Username saved.");
+    } catch (err: any) {
+      setError(err.response?.data?.detail || "Could not save username.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="max-w-3xl space-y-8">
       <div>
         <h1 className="font-display text-4xl">Settings</h1>
-        <p className="mt-2 text-muted-foreground">Manage your account, preferences and privacy.</p>
+        <p className="mt-2 text-muted-foreground">
+          Manage your account, preferences and privacy.
+        </p>
       </div>
 
       <Section title="Account">
         <Row label="Display name">
           <input
-            value={user.username}
-            onChange={(e) =>
-              setUser({ ...user, username: e.target.value })
-              }
-              className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
-             />
-          </Row>
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
+          />
+        </Row>
 
-          <Row label="Email">
-            <input
-              value={user.email}
-              onChange={(e) =>
-                setUser({ ...user, email: e.target.value })
-              }
-              className="w-64 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-foreground/40"
-            />
-          </Row>
-      </Section>
-
-      <Section title="Notifications">
-        <Row label="Weekly style edit" hint="Curated trends every Monday morning."><Toggle on={emails} onChange={setEmails} /></Row>
-        <Row label="Push notifications" hint="Real-time when AI predictions are ready."><Toggle on={push} onChange={setPush} /></Row>
-      </Section>
-
-      <Section title="Privacy">
-        <Row label="Public profile" hint="Allow others to see your aesthetic and palette."><Toggle on={pub} onChange={setPub} /></Row>
-        <Row label="Delete account" hint="Permanently remove your data.">
-          <button className="rounded-full border border-destructive/40 px-4 py-2 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground transition">Delete</button>
+        <Row label="Email" hint="Email is locked to this account and cannot be changed here.">
+          <input
+            value={email}
+            readOnly
+            aria-readonly="true"
+            className="w-64 cursor-not-allowed rounded-xl border border-border bg-secondary px-3 py-2 text-sm text-muted-foreground outline-none"
+          />
         </Row>
       </Section>
 
-      <div className="flex justify-end">
-        <GradientButton>Save changes</GradientButton>
+      <Section title="Notifications">
+        <Row
+          label="Weekly style edit"
+          hint="Curated trends every Monday morning."
+        >
+          <Toggle on={emails} onChange={setEmails} />
+        </Row>
+
+        <Row
+          label="Push notifications"
+          hint="When a style report is ready."
+        >
+          <Toggle on={push} onChange={setPush} />
+        </Row>
+      </Section>
+
+      <Section title="Privacy">
+        <Row
+          label="Public profile"
+          hint="Allow others to see your style direction and palette."
+        >
+          <Toggle on={pub} onChange={setPub} />
+        </Row>
+
+        <Row
+          label="Delete account"
+          hint="Permanently remove your data."
+        >
+          <button
+            type="button"
+            className="rounded-full border border-destructive/40 px-4 py-2 text-xs text-destructive transition hover:bg-destructive hover:text-destructive-foreground"
+          >
+            Delete
+          </button>
+        </Row>
+      </Section>
+
+      <div className="flex flex-col items-end gap-3">
+        {message && <p className="text-sm text-foreground">{message}</p>}
+        {error && <p className="text-sm text-destructive">{error}</p>}
+        <GradientButton onClick={saveAccount} disabled={saving}>
+          {saving ? "Saving..." : "Save changes"}
+        </GradientButton>
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bookmark, Heart, Plus } from "lucide-react";
 import { useState } from "react";
-import { galleryImages } from "@/lib/mock-data";
+import { moodboardImages } from "@/lib/style-data";
 import { EmptyState } from "@/components/ui-kit/EmptyState";
 import { GradientButton } from "@/components/ui-kit/GradientButton";
 
 export const Route = createFileRoute("/app/saved")({
-  head: () => ({ meta: [{ title: "Saved — Atelier AI" }] }),
+  head: () => ({ meta: [{ title: "Saved — Pincher" }] }),
   component: Saved,
 });
 
@@ -49,7 +49,7 @@ function Saved() {
         />
       ) : (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {[...galleryImages, ...galleryImages].map((g, i) => (
+          {[...moodboardImages, ...moodboardImages].map((g, i) => (
             <div key={i} className="group relative overflow-hidden rounded-2xl bg-secondary">
               <div className="aspect-[4/5] overflow-hidden">
                 <img src={g} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
@@ -64,3 +64,4 @@ function Saved() {
     </div>
   );
 }
+
