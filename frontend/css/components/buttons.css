@@ -1,0 +1,19 @@
+.primary-btn {
+  padding: 14px 24px;
+  border: none;
+  background: var(--primary);
+  color: #111;
+
+  border-radius: 12px;
+  cursor: pointer;
+
+  font-size: 16px;
+  font-weight: 600;
+
+  transition: 0.3s ease;
+}
+
+.primary-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
