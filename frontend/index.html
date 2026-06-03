@@ -1,37 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pincher</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pincher</title>
 
-  <link rel="stylesheet" href="./css/main.css" />
+    <link rel="stylesheet" href="./css/pages/home.css">
+    <link rel="stylesheet" href="./css/layouts/navbar.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-  <header class="navbar">
-    <img src="./assets/icons/p.png" alt="logo">
+      <nav class="navbar">
 
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="upload.html">Upload</a>
-      <a href="dashboard.html">Dashboard</a>
-      <a href="login.html">Login</a>
+        <div class="nav-logo">
+            <img src="./assets/icons/pincher.png" alt="logo" class="logo">
+        </div>
+
+        <div class="nav-links">
+            <a href="index.html">Home</a>
+            <a href="upload.html">Upload</a>
+            <a href="dashboard.html">Dashboard</a>
+            <a href="login.html" class="login-btn">Login</a>
+        </div>
+
     </nav>
-  </header>
 
-  <section class="hero">
-    <div>
-      <h1>Fashion Predictor</h1>
-      <p>Upload your outfit and get powered fashion recommendations instantly.</p>
+ 
 
-      <a href="upload.html" class="primary-btn">
-        Start Predicting
-      </a>
-    </div>
-  </section>
+    <!-- HERO SECTION -->
 
+    <section class="hero">
 
-  <script src="./js/main.js"></script>
+        <div class="hero-content">
+
+            <h1>
+                Fashion <br>
+                <span>Predictor</span>
+            </h1>
+
+            <p class="normal">
+                Upload your outfit and get AI-powered fashion
+                recommendations, matching products and style
+                insights instantly.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="upload.html" class="primary-btn">
+                    Start Predicting
+                </a>
+
+                <a href="dashboard.html" class="secondary-btn">
+                    View Dashboard
+                </a>
+
+            </div>
+
+            <div class="stats">
+
+                <div>
+                    <h3>50K+</h3>
+                    <p>Predictions</p>
+                </div>
+
+                <div>
+                    <h3>92%</h3>
+                    <p>Accuracy</p>
+                </div>
+
+                <div>
+                    <h3>10K+</h3>
+                    <p>Users</p>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="hero-image">
+
+            <img
+                src="./assets/images/model.jpg"
+                alt="Fashion Model"
+                class="main-model"
+            >
+
+            <div class="floating-card card1">
+                <img src="./assets/images/outfit1.jpg" alt="">
+            </div>
+
+            <div class="floating-card card2">
+                <img src="./assets/images/outfit2.jpg" alt="">
+            </div>
+
+            <div class="score-card">
+                <h3>AI Match Score</h3>
+                <h2>94%</h2>
+            </div>
+
+        </div>
+
+    </section>
+
 </body>
 </html>

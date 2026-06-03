@@ -1,32 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login - Pincher</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Pincher</title>
 
-  <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/pages/login.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<section class="auth-container">
+<div class="container">
 
-  <form class="auth-form">
-    <h2>Welcome Back</h2>
 
-    <input type="email" placeholder="Email" required>
-    <input type="password" placeholder="Password" required>
+    <div class="left-panel">
+        <img src="./assets/icons/pincher.png">
 
-    <button class="primary-btn">Login</button>
+        <div class="overlay">
 
-    <p>
-      Don't have an account?
-      <a href="signup.html">Signup</a>
-    </p>
-  </form>
+            <h1>Pincher</h1>
 
-</section>
+            <p>
+                Discover your perfect style with AI-powered fashion recommendations.
+            </p>
 
-<script src="./js/modules/auth/login.js"></script>
+        </div>
+
+    </div>
+
+
+    <div class="right-panel">
+
+        <div class="form-box">
+
+            <h2>Welcome Back!!</h2>
+
+            <p>
+                Login to continue your fashion journey
+            </p>
+
+            <form>
+
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" placeholder="Enter your email">
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="Enter password">
+                </div>
+
+                <div class="options">
+
+                    <label>
+                        <input type="checkbox">
+                        Remember me
+                    </label>
+
+                    <a href="#">
+                        Forgot Password?
+                    </a>
+
+                </div>
+
+                <button type="submit">
+                    Login
+                </button>
+
+            </form>
+
+            <p class="signup-link">
+                Don't have an account?
+                <a href="signup.html">Sign Up</a>
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
 </body>
 </html>

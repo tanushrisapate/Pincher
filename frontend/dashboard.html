@@ -1,51 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pincher Dashboard</title>
 
-  <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/pages/dashboard.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
-<div class="dashboard-layout">
+<div class="dashboard">
 
-  <aside class="sidebar">
-    <h2>Pincher</h2>
+    <aside class="sidebar">
 
-    <a href="dashboard.html">Overview</a>
-    <a href="upload.html">Upload</a>
-    <a href="result.html">Results</a>
-  </aside>
+       <div class="nav-logo">
+            <img src="./assets/icons/pincher.png" alt="logo" class="logo">
+        </div>
 
-  <main class="dashboard-content">
 
-    <h1>Dashboard</h1>
+        <nav class="menu">
+            <a href="#" class="active">Overview</a>
+            <a href="#">Upload</a>
+            <a href="#"> History</a>
+            <a href="#">Favorites</a>
+            <a href="#">Settings</a>
+        </nav>
 
-    <div class="grid-3">
+        <div class="logout">
+            <a href="#">Logout</a>
+        </div>
 
-      <div class="card">
-        <h3>Total Uploads</h3>
-        <p>34</p>
-      </div>
+    </aside>
 
-      <div class="card">
-        <h3>Predictions</h3>
-        <p>102</p>
-      </div>
+    <main class="main">
 
-      <div class="card">
-        <h3>Saved Looks</h3>
-        <p>18</p>
-      </div>
+        <div class="topbar">
 
-    </div>
+            <div>
+                <h1>Welcome, Sarah!</h1>
+                <p>Here's your fashion overview</p>
+            </div>
 
-  </main>
+            <div class="profile">
+
+                <div class="notification">
+                    🔔
+                </div>
+
+                <div class="avatar">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="">
+                </div>
+
+            </div>
+
+        </div>
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <div class="icon">📂</div>
+                <span>Predictions</span>
+                <h2>24</h2>
+                <p>This Month</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">💗</div>
+                <span>Matches</span>
+                <h2>92%</h2>
+                <p>Avg Accuracy</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">👜</div>
+                <span>Outfits</span>
+                <h2>18</h2>
+                <p>Saved</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">🤍</div>
+                <span>Favorites</span>
+                <h2>7</h2>
+                <p>Outfits</p>
+            </div>
+
+        </section>
+
+        <div class="section-header">
+
+            <h2>Recent Predictions</h2>
+
+            <button>View All</button>
+
+        </div>
+
+        <section class="prediction-grid">
+
+            <div class="prediction-card">
+
+                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600" alt="">
+
+                <div class="prediction-content">
+                    <h4>96% Match</h4>
+                    <p>2 May 2024</p>
+                </div>
+
+            </div>
+
+            <div class="prediction-card">
+
+                <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600" alt="">
+
+                <div class="prediction-content">
+                    <h4>92% Match</h4>
+                    <p>30 Apr 2026</p>
+                </div>
+
+            </div>
+
+            <div class="prediction-card">
+
+                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600" alt="">
+
+                <div class="prediction-content">
+                    <h4>89% Match</h4>
+                    <p>28 Apr 2024</p>
+                </div>
+
+            </div>
+
+            <div class="prediction-card">
+
+                <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="">
+
+                <div class="prediction-content">
+                    <h4>94% Match</h4>
+                    <p>25 Apr 2024</p>
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <aside class="recommendation">
+
+        <div class="recommendation-card">
+
+            <h5>Top Style Recommendation</h5>
+
+            <h2>Casual Chic</h2>
+
+            <p>
+                Based on your recent preferences and prediction history.
+            </p>
+
+            <button>View More</button>
+
+            <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="">
+
+        </div>
+
+    </aside>
 
 </div>
 
-<script src="./js/modules/dashboard/dashboard.js"></script>
 </body>
 </html>

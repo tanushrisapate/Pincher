@@ -1,29 +1,91 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Signup - Pincher</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pincher - Sign Up</title>
 
-  <link rel="stylesheet" href="./css/main.css">
+    <link rel="stylesheet" href="./css/pages/signup.css">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
 
-<section class="auth-container">
+<div class="container">
 
-  <form class="auth-form">
-    <h2>Create Account</h2>
+    <div class="signup-card">
 
-    <input type="text" placeholder="Full Name">
-    <input type="email" placeholder="Email">
-    <input type="password" placeholder="Password">
+        
+        <div class="logo">
+            <img src="./assets/icons/pincher.png" alt="logo" class="logo">
+        </div>
 
-    <button class="primary-btn">Signup</button>
+        <h2>Create Account</h2>
 
-  </form>
+        <p class="subtitle">
+            Join Pincher and discover your perfect style with AI.
+        </p>
 
-</section>
+        <form>
 
-<script src="./js/modules/auth/signup.js"></script>
+            <div class="input-group">
+                <label>Full Name</label>
+                <input
+                    type="text"
+                    placeholder="Enter your full name"
+                    required
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Email Address</label>
+                <input
+                    type="email"
+                    placeholder="Enter your email"
+                    required
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Password</label>
+                <input
+                    type="password"
+                    placeholder="Create password"
+                    required
+                >
+            </div>
+
+            <div class="input-group">
+                <label>Confirm Password</label>
+                <input
+                    type="password"
+                    placeholder="Confirm password"
+                    required
+                >
+            </div>
+
+            <button type="submit">
+                Create Account
+            </button>
+
+        </form>
+
+        <div class="divider">
+            <span>OR</span>
+        </div>
+
+        <button class="google-btn">
+            Continue with Google
+        </button>
+
+        <p class="login-link">
+            Already have an account?
+            <a href="login.html">Login</a>
+        </p>
+
+    </div>
+
+</div>
+
 </body>
 </html>
