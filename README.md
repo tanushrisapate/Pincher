@@ -1,4 +1,4 @@
-# ✨ Pincher — Haute Wardrobe Intelligence & AI Stylist
+# Pincher — Haute Wardrobe Intelligence & AI Stylist
 
 <div align="center">
 
@@ -26,9 +26,9 @@ Built with a curated **Balanced Gold luxury design system** (`#B8860B`, `#D4AF37
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
-### 1. 🧠 100% Wardrobe-Grounded Outfit Recommendation Engine
+### 1. 100% Wardrobe-Grounded Outfit Recommendation Engine
 * **No Fake/Hallucinated Clothes**: Generates combinations composed strictly of pieces you actually own.
 * **Multi-Tier Outfit Scoring**:
   * **Color Harmony (50%)**: Evaluates Complementary, Monochromatic, Analogous, and Neutral Accent palettes.
@@ -41,16 +41,16 @@ Built with a curated **Balanced Gold luxury design system** (`#B8860B`, `#D4AF37
 * **Footwear & Accessory Vision Analyzer**: Automatically recognizes sneakers, boots, loafers, and oxfords through horizontal sole contours and midsole edge gradients.
 * **1-Click Category Confirmation**: Interactive visual pills for *Tops, Bottoms, Outerwear, Dresses, Shoes, and Accessories*.
 
-### 3. 🎨 Precision Dominant Color Extraction
+### 3. Precision Dominant Color Extraction
 * **Background Masking**: Isolates the garment region and eliminates studio backdrops.
 * **Perceived Luminance Detection**: Accurately recognizes dark shades (*Jet Black, Charcoal Black, Slate Grey*) without washing them out.
 * **Luxury Palette Matching**: Automatically labels 20+ signature fashion hues (*Champagne Gold, Saddle Brown, Burgundy Wine, Emerald Forest Green, Navy Blue*).
 
-### 4. ☀️ Live Climate & Weather Advisory
+### 4. Live Climate & Weather Advisory
 * **Open-Meteo Live Integration**: Real-time GPS/City weather forecasts (Temperature, Feels Like, Humidity, Rain Probability).
 * **Automated Layering Rules**: Dynamic warnings when temperatures dip below 18°C or rise above 28°C.
 
-### 5. 🔐 PostgreSQL 17 + JWT Authentication
+### 5. PostgreSQL 17 + JWT Authentication
 * **Secure Session Management**: Bcrypt password hashing (10 salt rounds) and HMAC SHA-256 JWT tokens.
 * **Dual Auth Support**: Supports both `httpOnly` secure cookies and `Authorization: Bearer` headers.
 * **Live Profile & Persona Settings**: Customize your primary style persona and sync lookbooks across devices.
@@ -188,20 +188,20 @@ python test_api.py
 * `PUT    /api/wardrobe/{id}` — Update garment metadata
 * `DELETE /api/wardrobe/{id}` — Remove item from wardrobe
 
-### 🪄 AI Outfit Recommendations
+### AI Outfit Recommendations
 * `POST   /api/outfits/recommend` — Generate weather & occasion attuned looks from real pieces
 * `POST   /api/outfits/save` — Save outfit combination to personal lookbook
 * `GET    /api/outfits/saved` — Retrieve all saved outfits with full item details
 * `DELETE /api/outfits/{id}` — Delete outfit from saved lookbook
 * `PATCH  /api/outfits/{id}/favorite` — Toggle outfit favorite status
 
-### ☀️ Weather & Climate
+###  Weather & Climate
 * `GET /api/weather/current` — Live temperature, humidity & sky conditions by coordinates
 * `GET /api/weather/by-city` — Weather forecast by city name
 
 ---
 
-## 🎨 Luxury Design Tokens
+## Luxury Design Tokens
 
 | Token | Hex Value | Role |
 |---|---|---|
