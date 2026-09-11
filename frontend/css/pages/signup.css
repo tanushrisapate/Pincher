@@ -1,0 +1,188 @@
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f8f5f7;
+
+    min-height:100vh;
+
+    display:flex;
+    justify-content:center;
+    align-items:center;
+
+    padding:20px;
+}
+
+.container{
+    width:100%;
+    max-width:500px;
+}
+
+.signup-card{
+    background:white;
+
+    padding:45px;
+
+    border-radius:28px;
+
+    box-shadow:0 10px 35px rgba(0,0,0,.06);
+}
+
+.logo{
+    text-align:center;
+    margin-bottom:25px;
+}
+
+.logo h1{
+    color:#d88bae;
+    font-size:50px;
+    font-weight:700;
+}
+
+.logo p{
+    color:#888;
+    font-size:12px;
+    letter-spacing:5px;
+}
+
+h2{
+    text-align:center;
+    color:#222;
+    font-size:32px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#777;
+    margin-top:8px;
+    margin-bottom:30px;
+}
+
+.input-group{
+    margin-bottom:18px;
+}
+
+.input-group label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:500;
+    color:#333;
+}
+
+.input-group input{
+    width:100%;
+
+    padding:14px 16px;
+
+    border:1px solid #ddd;
+    border-radius:12px;
+
+    outline:none;
+
+    transition:.3s;
+}
+
+.input-group input:focus{
+    border-color:#df8db2;
+}
+
+button[type="submit"]{
+    width:100%;
+
+    border:none;
+
+    background:#df8db2;
+    color:white;
+
+    padding:15px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-size:16px;
+    font-weight:600;
+
+    margin-top:10px;
+
+    transition:.3s;
+}
+
+button[type="submit"]:hover{
+    background:#d579a2;
+}
+
+.divider{
+    text-align:center;
+    margin:25px 0;
+    color:#999;
+    position:relative;
+}
+
+.divider::before,
+.divider::after{
+    content:"";
+    position:absolute;
+    top:50%;
+
+    width:40%;
+    height:1px;
+
+    background:#eee;
+}
+
+.divider::before{
+    left:0;
+}
+
+.divider::after{
+    right:0;
+}
+
+.google-btn{
+    width:100%;
+
+    border:1px solid #ddd;
+    background:white;
+
+    padding:14px;
+
+    border-radius:12px;
+
+    cursor:pointer;
+
+    font-weight:500;
+
+    transition:.3s;
+}
+
+.google-btn:hover{
+    background:#fafafa;
+}
+
+.login-link{
+    text-align:center;
+    margin-top:25px;
+    color:#666;
+}
+
+.login-link a{
+    color:#d86c9d;
+    text-decoration:none;
+    font-weight:600;
+}
+
+@media(max-width:600px){
+
+    .signup-card{
+        padding:30px;
+    }
+
+    h2{
+        font-size:26px;
+    }
+}
