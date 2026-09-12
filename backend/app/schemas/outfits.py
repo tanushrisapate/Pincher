@@ -5,6 +5,7 @@ from app.schemas.wardrobe import WardrobeItemResponse
 
 class OutfitRecommendationRequest(BaseModel):
     occasion: Optional[str] = "daily"
+    day_of_week: Optional[str] = None
     temperature: Optional[float] = None
     weather_condition: Optional[str] = "Clear"
     preferred_color: Optional[str] = None
@@ -23,6 +24,7 @@ class RecommendedOutfit(BaseModel):
     id: str
     packet_number: int = 1
     title: str
+    day_of_week: Optional[str] = None
     occasion: str = "casual"
     top: Optional[WardrobeItemResponse] = None
     bottom: Optional[WardrobeItemResponse] = None

@@ -20,8 +20,19 @@ import {
   Watch,
   Sliders,
   Layers,
-  Info
+  Info,
+  CalendarDays
 } from "lucide-react";
+
+const WEEKDAYS = [
+  { id: "monday", label: "Monday", short: "Mon", icon: "💼", theme: "Executive Focus" },
+  { id: "tuesday", label: "Tuesday", short: "Tue", icon: "⚡", theme: "Smart Productivity" },
+  { id: "wednesday", label: "Wednesday", short: "Wed", icon: "✨", theme: "Midweek Balance" },
+  { id: "thursday", label: "Thursday", short: "Thu", icon: "🧥", theme: "Creative Layering" },
+  { id: "friday", label: "Friday", short: "Fri", icon: "🥂", theme: "Desk to Dinner" },
+  { id: "saturday", label: "Saturday", short: "Sat", icon: "🌿", theme: "Weekend Social" },
+  { id: "sunday", label: "Sunday", short: "Sun", icon: "☕", theme: "Relaxed Reset" },
+];
 
 const OCCASIONS = [
   { id: "casual", label: "Casual Everyday", icon: "✨", desc: "Relaxed tops, versatile jeans, sneakers & watches" },
@@ -33,8 +44,11 @@ const OCCASIONS = [
 
 export default function RecommendationsPage() {
   const { user } = useAuth();
+  const [selectedDay, setSelectedDay] = useState(
+    new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
+  );
   const [occasion, setOccasion] = useState("casual");
-  const [temperature, setTemperature] = useState(16.0); // Defaults to crisp spring/fall cold test
+  const [temperature, setTemperature] = useState(16.0);
   const [weatherCondition, setWeatherCondition] = useState("Cool & Breezy");
   const [recommendations, setRecommendations] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +64,6 @@ export default function RecommendationsPage() {
   useEffect(() => {
     async function initContext() {
       try {
-        // 1. Fetch live weather from backend
         const weatherRes = await fetch("http://localhost:8000/api/weather/current?lat=28.6139&lon=77.2090&city=Delhi").catch(() => null);
         if (weatherRes && weatherRes.ok) {
           const w = await weatherRes.json();
@@ -60,7 +73,6 @@ export default function RecommendationsPage() {
           }
         }
 
-        // 2. Fetch user wardrobe
         const wardrobeRes = await fetch("/api/wardrobe").catch(() => null);
         if (wardrobeRes && wardrobeRes.ok) {
           const wData = await wardrobeRes.json();
@@ -68,7 +80,8 @@ export default function RecommendationsPage() {
           setWardrobeCount(items.length);
           setWardrobeItemsCache(items);
           if (items.length > 0) {
-            fetchRecommendations("casual", items, temperature);
+            const todayDay = new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
+            fetchRecommendations("casual", items, temperature, todayDay);
           }
         }
       } catch (err) {
@@ -79,16 +92,21 @@ export default function RecommendationsPage() {
     initContext();
   }, []);
 
-  const fetchRecommendations = async (selectedOccasion = occasion, cachedItems = wardrobeItemsCache, targetTemp = temperature) => {
+  const fetchRecommendations = async (
+    selectedOccasion = occasion,
+    cachedItems = wardrobeItemsCache,
+    targetTemp = temperature,
+    dayKey = selectedDay
+  ) => {
     setIsLoading(true);
     try {
-      // 1. Direct call to FastAPI /api/outfits/recommend
       const res = await fetch("http://localhost:8000/api/outfits/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
           occasion: selectedOccasion,
+          day_of_week: dayKey,
           temperature: targetTemp,
           weather_condition: weatherCondition,
           persona: user?.persona || "classic",
@@ -101,9 +119,7 @@ export default function RecommendationsPage() {
         const data = await res.json();
         setRecommendations(data.recommendations || []);
       } else {
-        // Fallback: build client-side condition-based packets from cached items
         const items = cachedItems.length > 0 ? cachedItems : (await (await fetch("/api/wardrobe")).json()).items || [];
-        
         const isColdClimate = targetTemp < 18.0;
         const coldTopKeywords = ["sweater", "hoodie", "cardigan", "sweatshirt", "long sleeve", "knit", "jacket", "flannel", "wool"];
         const coldBottomExcluded = ["short", "shorts", "mini", "swim"];
@@ -113,7 +129,6 @@ export default function RecommendationsPage() {
         let shoes = items.filter((i) => i.category.toLowerCase() === "shoes");
         let outerwear = items.filter((i) => i.category.toLowerCase() === "outerwear");
         let accessories = items.filter((i) => i.category.toLowerCase() === "accessories");
-        let dresses = items.filter((i) => i.category.toLowerCase() === "dresses");
 
         if (isColdClimate) {
           const warmTops = tops.filter((t) => coldTopKeywords.some((k) => (t.name || "").toLowerCase().includes(k)));
@@ -123,12 +138,8 @@ export default function RecommendationsPage() {
           if (longBottoms.length > 0) bottoms = longBottoms;
         }
 
+        const dayInfo = WEEKDAYS.find((d) => d.id === dayKey) || WEEKDAYS[0];
         const generatedPackets = [];
-        const rulesList = isColdClimate
-          ? ["❄️ Full-sleeve warm top enforced (<18°C)", "🚫 Shorts filtered out", "🧥 Outerwear layer attached", "👟 Closed footwear matched"]
-          : targetTemp > 26.0
-          ? ["☀️ Breathable lightweight fabric prioritized (>26°C)", "🩳 Warm-weather bottom permitted", "🕶️ Outdoor accessories paired"]
-          : [`✨ Balanced ${selectedOccasion} styling for mild ${Math.round(targetTemp)}°C weather`];
 
         tops.forEach((top, idx) => {
           if (idx < 4 && bottoms.length > 0) {
@@ -140,18 +151,18 @@ export default function RecommendationsPage() {
             generatedPackets.push({
               id: `packet-${idx + 1}`,
               packet_number: idx + 1,
-              title: `Packet #${idx + 1} • ${top.name.split(" ")[0]} & ${bottom.name.split(" ")[0]} Set`,
+              title: `${dayInfo.label} Set #${idx + 1}`,
+              day_of_week: dayInfo.label,
               occasion: selectedOccasion,
               top,
               bottom,
               shoes: shoe,
               outerwear: outer,
               accessories: accs,
-              scores: { color_harmony: 94.0, weather_fit: 96.0, persona_match: 95.0, total_score: 95.0 },
-              explanation: `100% Grounded ${selectedOccasion.toUpperCase()} Set. ${top.name} matched with ${bottom.name} for optimal color harmony.${outer ? ` Layered with ${outer.name} for thermal comfort.` : ""}`,
+              scores: { color_harmony: 95.0, weather_fit: 96.0, persona_match: 95.0, total_score: 95.0 },
+              explanation: `${dayInfo.label} Outfit Set`,
               weather_badge: `${Math.round(targetTemp)}°C • ${weatherCondition}`,
-              harmony_tag: "Neutral Accent",
-              weather_rules_applied: rulesList,
+              harmony_tag: "Harmonious",
             });
           }
         });
@@ -165,14 +176,19 @@ export default function RecommendationsPage() {
     }
   };
 
+  const handleDayChange = (dayId) => {
+    setSelectedDay(dayId);
+    fetchRecommendations(occasion, wardrobeItemsCache, temperature, dayId);
+  };
+
   const handleOccasionChange = (occId) => {
     setOccasion(occId);
-    fetchRecommendations(occId, wardrobeItemsCache, temperature);
+    fetchRecommendations(occId, wardrobeItemsCache, temperature, selectedDay);
   };
 
   const handleTempChange = (newTemp) => {
     setTemperature(newTemp);
-    fetchRecommendations(occasion, wardrobeItemsCache, newTemp);
+    fetchRecommendations(occasion, wardrobeItemsCache, newTemp, selectedDay);
   };
 
   const handleSaveOutfit = async (packet) => {
@@ -231,20 +247,56 @@ export default function RecommendationsPage() {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature)}
+            onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature, selectedDay)}
             disabled={isLoading || wardrobeCount === 0}
             className="px-4 py-2.5 bg-[#B8860B] hover:bg-[#8C6212] text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-[#B8860B]/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
           >
             <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
-            <span>Regenerate Packets</span>
+            <span>Regenerate Sets</span>
           </button>
         </div>
       </div>
 
-      {/* Occasion & Condition Selector */}
+      {/* 1. Day of the Week Wardrobe Planner */}
+      <div className="bg-white/80 backdrop-blur-xl border border-[#E7E5E4] rounded-2xl p-5 shadow-2xs space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CalendarDays size={16} className="text-[#8C6212]" />
+            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">
+              1. Select Day of the Week
+            </span>
+          </div>
+          <span className="text-xs text-[#8C6212] font-semibold">
+            {WEEKDAYS.find((d) => d.id === selectedDay)?.theme}
+          </span>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
+          {WEEKDAYS.map((day) => {
+            const isSelected = selectedDay === day.id;
+            return (
+              <button
+                key={day.id}
+                onClick={() => handleDayChange(day.id)}
+                className={`p-3 rounded-xl text-center transition-all border flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
+                  isSelected
+                    ? "bg-[#FAF8F5] border-[#B8860B] shadow-xs text-[#8C6212] ring-2 ring-[#B8860B]/20"
+                    : "bg-white border-[#E7E5E4] hover:border-[#D4AF37]/50 text-[#44403C]"
+                }`}
+              >
+                <span className="text-base">{day.icon}</span>
+                <span className="text-xs font-bold">{day.label}</span>
+                <span className="text-[10px] text-stone-400 font-medium">{day.theme}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 2. Occasion & Condition Selector */}
       <div className="bg-white/80 backdrop-blur-xl border border-[#E7E5E4] rounded-2xl p-5 shadow-2xs space-y-4">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">1. Select Your Condition / Occasion</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">2. Occasion & Dress Code</span>
           <span className="text-xs text-[#8C6212] font-semibold">
             {OCCASIONS.find((o) => o.id === occasion)?.desc}
           </span>
@@ -278,7 +330,7 @@ export default function RecommendationsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Sliders size={16} className="text-[#8C6212]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">2. Manual Climate & Season Simulator</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">3. Manual Climate & Season Simulator</span>
           </div>
 
           <div className="flex items-center gap-2">
