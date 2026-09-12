@@ -35,3 +35,7 @@ yarn-error.log*
 Thumbs.db
 .vscode/
 .idea/
+
+# Local Dataset Cache
+dataset/
+

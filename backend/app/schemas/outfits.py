@@ -10,6 +10,8 @@ class OutfitRecommendationRequest(BaseModel):
     preferred_color: Optional[str] = None
     avoid_color: Optional[str] = None
     persona: Optional[str] = None
+    max_packets: Optional[int] = 5
+    strict_weather: Optional[bool] = True
 
 class OutfitScoreDetails(BaseModel):
     color_harmony: float
@@ -19,20 +21,25 @@ class OutfitScoreDetails(BaseModel):
 
 class RecommendedOutfit(BaseModel):
     id: str
+    packet_number: int = 1
     title: str
+    occasion: str = "casual"
     top: Optional[WardrobeItemResponse] = None
     bottom: Optional[WardrobeItemResponse] = None
     outerwear: Optional[WardrobeItemResponse] = None
     shoes: Optional[WardrobeItemResponse] = None
+    accessories: List[WardrobeItemResponse] = []
     dress: Optional[WardrobeItemResponse] = None
     scores: OutfitScoreDetails
     explanation: str
     weather_badge: str
     harmony_tag: str
+    weather_rules_applied: List[str] = []
 
 class OutfitRecommendationResponse(BaseModel):
     success: bool
     weather_context: Dict[str, Any]
+    total_packets: int = 0
     recommendations: List[RecommendedOutfit]
 
 class OutfitSaveRequest(BaseModel):

@@ -57,6 +57,7 @@ async def recommend_outfits(
             "occasion": request.occasion,
             "persona": persona
         },
+        total_packets=len(recommendations),
         recommendations=recommendations
     )
 

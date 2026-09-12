@@ -4,7 +4,7 @@
  * - DeepFashion2 ONNX inference + Footwear (Sole/Tread/Ankle/Lace) & Accessory vision detectors
  */
 
-const PINCHER_CATEGORIES = ['bottoms', 'dresses', 'outerwear', 'tops'];
+const PINCHER_CATEGORIES = ['accessories', 'bottoms', 'dresses', 'outerwear', 'shoes', 'tops'];
 
 let ortSession = null;
 let isModelLoading = false;
@@ -133,7 +133,6 @@ function analyzeFootwearFeatures(imgElement) {
     for (let y = bottomStartY; y < height - 2; y++) {
       for (let x = 2; x < width - 2; x++) {
         const idx = y * width + x;
-        // Horizontal and vertical Sobel-like gradient
         const gx = Math.abs(gray[idx + 1] - gray[idx - 1]);
         const gy = Math.abs(gray[idx + width] - gray[idx - width]);
 
@@ -186,7 +185,7 @@ function analyzeFootwearFeatures(imgElement) {
 
 /**
  * Classifies an uploaded clothing image.
- * Combines Footwear Visual Analyzer with DeepFashion2 ONNX model.
+ * Uses the 6-Class MobileNetV3 ONNX Model + Footwear Vision Enhancer.
  */
 export async function classifyClothingImage(imageSource) {
   return new Promise((resolve) => {
@@ -194,29 +193,21 @@ export async function classifyClothingImage(imageSource) {
     img.crossOrigin = 'anonymous';
     img.onload = async () => {
       try {
-        // 1. Check for Footwear (Sneakers, Shoes, Boots, Loafers)
         const shoeAnalysis = analyzeFootwearFeatures(img);
-        if (shoeAnalysis.isShoe) {
-          resolve({
-            category: 'shoes',
-            confidence: shoeAnalysis.confidence,
-            detectedFeature: 'Footwear & Sole Contour',
-          });
-          return;
-        }
 
-        // 2. Run DeepFashion2 ONNX Model for Tops, Bottoms, Outerwear, Dresses
+        // Run 6-Class AI Classifier ONNX Model
         const session = await loadClothingModel();
         if (session) {
           const ort = await import('onnxruntime-web');
           const tensorData = preprocessImage(img);
           const inputTensor = new ort.Tensor('float32', tensorData, [1, 3, 224, 224]);
 
+          const inputName = session.inputNames[0] || 'image';
           const feeds = {};
-          feeds[session.inputNames[0]] = inputTensor;
+          feeds[inputName] = inputTensor;
 
           const results = await session.run(feeds);
-          const outputName = session.outputNames[0];
+          const outputName = session.outputNames[0] || 'category_scores';
           const rawScores = Array.from(results[outputName].data);
           const probs = softmax(rawScores);
 
@@ -228,10 +219,26 @@ export async function classifyClothingImage(imageSource) {
           let predictedCat = PINCHER_CATEGORIES[bestIdx] || 'tops';
           let confidence = Math.round(probs[bestIdx] * 100);
 
+          // If vision detector has high confidence on footwear sole/contour and NN agrees or is close
+          if (shoeAnalysis.isShoe && (predictedCat === 'shoes' || probs[PINCHER_CATEGORIES.indexOf('shoes')] > 0.2)) {
+            predictedCat = 'shoes';
+            confidence = Math.max(confidence, shoeAnalysis.confidence);
+          }
+
           resolve({
             category: predictedCat,
             confidence: Math.max(75, confidence),
             allProbabilities: probs,
+          });
+          return;
+        }
+
+        // Fast fallback if ONNX unavailable
+        if (shoeAnalysis.isShoe) {
+          resolve({
+            category: 'shoes',
+            confidence: shoeAnalysis.confidence,
+            detectedFeature: 'Footwear & Sole Contour',
           });
           return;
         }
