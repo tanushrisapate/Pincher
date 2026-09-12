@@ -166,27 +166,32 @@ def generate_outfit_recommendations(
     elif is_hot:
         active_rules.append("☀️ Breathable lightweight fabrics prioritized")
 
-    # 3. Formulate Coordinated Packets
+    # 3. Formulate Coordinated Packets from Combinations
+    candidate_combos = []
+    for top in filtered_tops:
+        for bottom in filtered_bottoms:
+            harmony = calculate_harmony_score(top.get("color_hex"), bottom.get("color_hex"))
+            day_score = (score_item_for_day(top, day_prof) + score_item_for_day(bottom, day_prof)) / 2.0
+            total_cand_score = (harmony["score"] * 0.6) + (day_score * 0.4)
+            candidate_combos.append({
+                "top": top,
+                "bottom": bottom,
+                "harmony": harmony,
+                "cand_score": total_cand_score
+            })
+
+    candidate_combos.sort(key=lambda x: x["cand_score"], reverse=True)
+
     packets = []
     packet_counter = 1
 
-    for top in filtered_tops:
+    for combo in candidate_combos:
         if packet_counter > max_packets:
             break
 
-        best_bottom = None
-        best_harmony = None
-        best_harmony_score = -1.0
-
-        for bottom in filtered_bottoms:
-            harmony = calculate_harmony_score(top.get("color_hex"), bottom.get("color_hex"))
-            if harmony["score"] > best_harmony_score:
-                best_harmony_score = harmony["score"]
-                best_bottom = bottom
-                best_harmony = harmony
-
-        if not best_bottom:
-            continue
+        top = combo["top"]
+        bottom = combo["bottom"]
+        best_harmony = combo["harmony"]
 
         selected_outerwear = None
         if is_cold or is_snowy or is_rainy or (request.strict_weather and weather_temp < 20.0):
@@ -218,7 +223,7 @@ def generate_outfit_recommendations(
         acc_text = f" Completed with {', '.join([a.name for a in assigned_accessories])}." if assigned_accessories else ""
         layer_text = f" Bundled with {selected_outerwear['name']} for thermal protection." if selected_outerwear else ""
         explanation = (
-            f"100% Grounded {target_occasion.title()} Packet for {day_prof['label']}. {top['name']} paired with {best_bottom['name']} "
+            f"100% Grounded {target_occasion.title()} Packet for {day_prof['label']}. {top['name']} paired with {bottom['name']} "
             f"creates a {best_harmony['type'].lower()} color palette.{layer_text}{acc_text}"
         )
 
@@ -232,7 +237,7 @@ def generate_outfit_recommendations(
                 day_of_week=day_prof["label"],
                 occasion=target_occasion,
                 top=WardrobeItemResponse(**top),
-                bottom=WardrobeItemResponse(**best_bottom),
+                bottom=WardrobeItemResponse(**bottom),
                 outerwear=WardrobeItemResponse(**selected_outerwear) if selected_outerwear else None,
                 shoes=WardrobeItemResponse(**selected_shoe) if selected_shoe else None,
                 accessories=assigned_accessories,

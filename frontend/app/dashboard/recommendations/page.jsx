@@ -141,30 +141,48 @@ export default function RecommendationsPage() {
         const dayInfo = WEEKDAYS.find((d) => d.id === dayKey) || WEEKDAYS[0];
         const generatedPackets = [];
 
-        tops.forEach((top, idx) => {
-          if (idx < 4 && bottoms.length > 0) {
-            const bottom = bottoms[idx % bottoms.length];
-            const shoe = shoes.length > 0 ? shoes[idx % shoes.length] : null;
-            const outer = (isColdClimate || outerwear.length > 0) ? outerwear[idx % outerwear.length] : null;
-            const accs = accessories.slice(idx * 2, idx * 2 + 2);
+        // Generate full combinations of tops and bottoms
+        const candidateCombos = [];
+        tops.forEach((top) => {
+          bottoms.forEach((bottom) => {
+            candidateCombos.push({ top, bottom });
+          });
+        });
 
-            generatedPackets.push({
-              id: `packet-${idx + 1}`,
-              packet_number: idx + 1,
-              title: `${dayInfo.label} Set #${idx + 1}`,
-              day_of_week: dayInfo.label,
-              occasion: selectedOccasion,
+        // Add dresses
+        dresses.forEach((dress) => {
+          candidateCombos.push({ dress });
+        });
+
+        const selectedCombos = candidateCombos.length > 0
+          ? candidateCombos.slice(0, 5)
+          : tops.slice(0, 4).map((top, idx) => ({
               top,
-              bottom,
-              shoes: shoe,
-              outerwear: outer,
-              accessories: accs,
-              scores: { color_harmony: 95.0, weather_fit: 96.0, persona_match: 95.0, total_score: 95.0 },
-              explanation: `${dayInfo.label} Outfit Set`,
-              weather_badge: `${Math.round(targetTemp)}°C • ${weatherCondition}`,
-              harmony_tag: "Harmonious",
-            });
-          }
+              bottom: bottoms[idx % Math.max(1, bottoms.length)] || null,
+            }));
+
+        selectedCombos.forEach((combo, idx) => {
+          const shoe = shoes.length > 0 ? shoes[idx % shoes.length] : null;
+          const outer = (isColdClimate || outerwear.length > 0) ? outerwear[idx % outerwear.length] : null;
+          const accs = accessories.slice(idx * 2, idx * 2 + 2);
+
+          generatedPackets.push({
+            id: `packet-${idx + 1}`,
+            packet_number: idx + 1,
+            title: `${dayInfo.label} Set #${idx + 1}`,
+            day_of_week: dayInfo.label,
+            occasion: selectedOccasion,
+            top: combo.top || null,
+            bottom: combo.bottom || null,
+            dress: combo.dress || null,
+            shoes: shoe,
+            outerwear: outer,
+            accessories: accs,
+            scores: { color_harmony: 95.0, weather_fit: 96.0, persona_match: 95.0, total_score: 95.0 },
+            explanation: `${dayInfo.label} Outfit Set`,
+            weather_badge: `${Math.round(targetTemp)}°C • ${weatherCondition}`,
+            harmony_tag: "Harmonious",
+          });
         });
 
         setRecommendations(generatedPackets);
@@ -506,107 +524,145 @@ export default function RecommendationsPage() {
               <motion.div
                 key={rec.id || idx}
                 variants={item}
-                className="bg-white/95 backdrop-blur-xl border border-[#E7E5E4] hover:border-[#D4AF37] rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
+                className="bg-white border border-stone-200 hover:border-[#D4AF37] rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Minimal Header */}
+                  {/* Clean Minimal Header */}
                   <div className="flex items-center justify-between gap-3 mb-4">
                     <div className="flex items-center gap-2.5">
                       <span className="text-xs font-black uppercase tracking-wider bg-[#8C6212] text-white px-3 py-1 rounded-lg shadow-2xs">
                         SET {rec.packet_number || idx + 1}
                       </span>
-                      <span className="text-base font-serif font-bold text-[#1C1917]">
-                        Packet #{rec.packet_number || idx + 1}
+                      <span className="text-sm font-serif font-bold text-[#1C1917]">
+                        {rec.title || `Packet #${rec.packet_number || idx + 1}`}
                       </span>
                     </div>
 
                     <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold">
                       <Sparkles size={12} className="text-emerald-600" />
-                      <span>{Math.round(rec.scores?.total_score || 94)}% Match</span>
+                      <span>{Math.round(rec.scores?.total_score || 95)}% Match</span>
                     </div>
                   </div>
 
-                  {/* Clean Visual Image Grid of Selected Items */}
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 my-2">
-                    {/* Top */}
-                    {rec.top && (
-                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
-                        <img
-                          src={rec.top.image_url}
-                          alt={rec.top.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
-                          Top
-                        </span>
-                      </div>
-                    )}
+                  {/* Fashion Flat-Lay Ensemble Canvas (Matching Image 2) */}
+                  <div className="w-full aspect-[4/4.5] sm:aspect-square bg-white rounded-2xl p-4 flex items-center justify-center border border-stone-100 shadow-2xs overflow-hidden">
+                    {rec.dress ? (
+                      /* One-Piece Dress Layout */
+                      <div className="w-full h-full grid grid-cols-2 gap-4 items-center">
+                        {/* Left: Dress spanning vertically */}
+                        <div className="w-full h-full flex items-center justify-center p-2">
+                          <img
+                            src={rec.dress.image_url}
+                            alt={rec.dress.name}
+                            className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                          />
+                        </div>
 
-                    {/* Bottom */}
-                    {rec.bottom && (
-                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
-                        <img
-                          src={rec.bottom.image_url}
-                          alt={rec.bottom.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
-                          Bottom
-                        </span>
-                      </div>
-                    )}
+                        {/* Right: Layer above, Shoes below */}
+                        <div className="flex flex-col items-center justify-between h-full py-2 gap-3">
+                          <div className="w-full h-[48%] flex items-center justify-center">
+                            {rec.outerwear ? (
+                              <img
+                                src={rec.outerwear.image_url}
+                                alt={rec.outerwear.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : rec.accessories && rec.accessories.length > 0 ? (
+                              <img
+                                src={rec.accessories[0].image_url}
+                                alt={rec.accessories[0].name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : null}
+                          </div>
 
-                    {/* Outerwear / Layer */}
-                    {rec.outerwear && (
-                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
-                        <img
-                          src={rec.outerwear.image_url}
-                          alt={rec.outerwear.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
-                          Layer
-                        </span>
+                          <div className="w-full h-[48%] flex items-center justify-center relative">
+                            {rec.shoes && (
+                              <img
+                                src={rec.shoes.image_url}
+                                alt={rec.shoes.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    )}
+                    ) : (
+                      /* Two-Piece Top + Bottom Layout (Image 2 style) */
+                      <div className="w-full h-full grid grid-cols-2 gap-4 items-center">
+                        {/* Left Column: Top above, Bottom directly below (Body Silhouette) */}
+                        <div className="flex flex-col items-center justify-between h-full py-1 gap-2">
+                          <div className="w-full h-[48%] flex items-center justify-center">
+                            {rec.top ? (
+                              <img
+                                src={rec.top.image_url}
+                                alt={rec.top.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : null}
+                          </div>
 
-                    {/* Shoes */}
-                    {rec.shoes && (
-                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
-                        <img
-                          src={rec.shoes.image_url}
-                          alt={rec.shoes.name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
-                          Shoes
-                        </span>
-                      </div>
-                    )}
+                          <div className="w-full h-[50%] flex items-center justify-center">
+                            {rec.bottom ? (
+                              <img
+                                src={rec.bottom.image_url}
+                                alt={rec.bottom.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : null}
+                          </div>
+                        </div>
 
-                    {/* Accessory */}
-                    {rec.accessories && rec.accessories.length > 0 && (
-                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
-                        <img
-                          src={rec.accessories[0].image_url}
-                          alt={rec.accessories[0].name}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
-                          Accessory
-                        </span>
-                        {rec.accessories.length > 1 && (
-                          <span className="absolute top-1.5 right-1.5 bg-[#8C6212] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
-                            +{rec.accessories.length - 1}
-                          </span>
-                        )}
+                        {/* Right Column: Outerwear / Layer top-right, Shoes bottom-right */}
+                        <div className="flex flex-col items-center justify-between h-full py-1 gap-2">
+                          <div className="w-full h-[48%] flex items-center justify-center">
+                            {rec.outerwear ? (
+                              <img
+                                src={rec.outerwear.image_url}
+                                alt={rec.outerwear.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : rec.accessories && rec.accessories.length > 0 ? (
+                              <img
+                                src={rec.accessories[0].image_url}
+                                alt={rec.accessories[0].name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : null}
+                          </div>
+
+                          <div className="w-full h-[48%] flex items-center justify-center relative">
+                            {rec.shoes ? (
+                              <img
+                                src={rec.shoes.image_url}
+                                alt={rec.shoes.name}
+                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
+                              />
+                            ) : null}
+
+                            {/* Accessory floating accent if outerwear is also shown */}
+                            {rec.outerwear && rec.accessories && rec.accessories.length > 0 && (
+                              <div className="absolute -top-3 -right-2 w-11 h-11 rounded-xl bg-white border border-stone-200 shadow-xs p-1 flex items-center justify-center">
+                                <img
+                                  src={rec.accessories[0].image_url}
+                                  alt={rec.accessories[0].name}
+                                  className="max-h-full max-w-full object-contain"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
                 {/* Minimal Footer */}
-                <div className="mt-4 pt-3 border-t border-[#E7E5E4] flex items-center justify-end">
+                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
+                  <span className="text-xs text-stone-500 font-medium">
+                    {rec.day_of_week || "Curated Set"} • {rec.weather_badge || "All-Weather"}
+                  </span>
+
                   <button
                     onClick={() => handleSaveOutfit(rec)}
                     disabled={isSaved || isSaving}
