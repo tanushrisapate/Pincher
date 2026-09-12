@@ -454,124 +454,107 @@ export default function RecommendationsPage() {
               <motion.div
                 key={rec.id || idx}
                 variants={item}
-                className="bg-white/95 backdrop-blur-xl border border-[#E7E5E4] hover:border-[#D4AF37] rounded-3xl p-6 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between"
+                className="bg-white/95 backdrop-blur-xl border border-[#E7E5E4] hover:border-[#D4AF37] rounded-3xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
               >
                 <div>
-                  {/* Card Header: Set Number & Harmony Badge */}
-                  <div className="flex items-start justify-between gap-3 mb-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[11px] font-black uppercase tracking-wider bg-[#8C6212] text-white px-2.5 py-0.5 rounded-md shadow-2xs">
-                          SET {rec.packet_number || idx + 1}
-                        </span>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C6212] bg-[#B8860B]/10 px-2 py-0.5 rounded-full">
-                          {rec.harmony_tag || "Color Harmony"}
-                        </span>
-                      </div>
-                      <h3 className="font-serif font-bold text-xl text-[#1C1917]">{rec.title}</h3>
+                  {/* Minimal Header */}
+                  <div className="flex items-center justify-between gap-3 mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-xs font-black uppercase tracking-wider bg-[#8C6212] text-white px-3 py-1 rounded-lg shadow-2xs">
+                        SET {rec.packet_number || idx + 1}
+                      </span>
+                      <span className="text-base font-serif font-bold text-[#1C1917]">
+                        Packet #{rec.packet_number || idx + 1}
+                      </span>
                     </div>
-                    
-                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-3 py-1 rounded-full text-xs font-bold shrink-0">
+
+                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold">
                       <Sparkles size={12} className="text-emerald-600" />
                       <span>{Math.round(rec.scores?.total_score || 94)}% Match</span>
                     </div>
                   </div>
 
-                  {/* Applied Weather & Condition Rules Pill List */}
-                  {rec.weather_rules_applied && rec.weather_rules_applied.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mb-4">
-                      {rec.weather_rules_applied.map((rule, rIdx) => (
-                        <span key={rIdx} className="text-[10px] font-semibold bg-stone-100 text-stone-700 px-2.5 py-0.5 rounded-full border border-stone-200">
-                          {rule}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* 5-Piece Coordinated Packet Slots (Top, Bottom, Outerwear, Shoes, Accessories) */}
-                  <div className="grid grid-cols-4 sm:grid-cols-5 gap-2 my-3 bg-stone-50/80 p-3 rounded-2xl border border-stone-200/80">
-                    {/* Top Slot */}
+                  {/* Clean Visual Image Grid of Selected Items */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 my-2">
+                    {/* Top */}
                     {rec.top && (
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white border border-stone-200 mb-1 shadow-2xs relative">
-                          <img src={rec.top.image_url} alt={rec.top.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#1C1917] truncate w-full">{rec.top.name}</span>
-                        <span className="text-[9px] text-[#8C6212] font-semibold uppercase">1 Top</span>
+                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
+                        <img
+                          src={rec.top.image_url}
+                          alt={rec.top.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Top
+                        </span>
                       </div>
                     )}
 
-                    {/* Bottom Slot */}
+                    {/* Bottom */}
                     {rec.bottom && (
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white border border-stone-200 mb-1 shadow-2xs">
-                          <img src={rec.bottom.image_url} alt={rec.bottom.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#1C1917] truncate w-full">{rec.bottom.name}</span>
-                        <span className="text-[9px] text-[#8C6212] font-semibold uppercase">1 Bottom</span>
+                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
+                        <img
+                          src={rec.bottom.image_url}
+                          alt={rec.bottom.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Bottom
+                        </span>
                       </div>
                     )}
 
-                    {/* Outerwear Slot */}
-                    {rec.outerwear ? (
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white border border-blue-200 mb-1 shadow-2xs">
-                          <img src={rec.outerwear.image_url} alt={rec.outerwear.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#1C1917] truncate w-full">{rec.outerwear.name}</span>
-                        <span className="text-[9px] text-blue-700 font-semibold uppercase">1 Layer</span>
-                      </div>
-                    ) : (
-                      <div className="hidden sm:flex flex-col items-center justify-center text-center border border-dashed border-stone-300 rounded-xl p-2 bg-stone-100/50">
-                        <span className="text-[9px] text-stone-400 font-bold uppercase">No Outerwear Needed</span>
+                    {/* Outerwear / Layer */}
+                    {rec.outerwear && (
+                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
+                        <img
+                          src={rec.outerwear.image_url}
+                          alt={rec.outerwear.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Layer
+                        </span>
                       </div>
                     )}
 
-                    {/* Shoes Slot */}
+                    {/* Shoes */}
                     {rec.shoes && (
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white border border-stone-200 mb-1 shadow-2xs">
-                          <img src={rec.shoes.image_url} alt={rec.shoes.name} className="w-full h-full object-cover" />
-                        </div>
-                        <span className="text-[10px] font-bold text-[#1C1917] truncate w-full">{rec.shoes.name}</span>
-                        <span className="text-[9px] text-[#8C6212] font-semibold uppercase">1 Shoes</span>
+                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
+                        <img
+                          src={rec.shoes.image_url}
+                          alt={rec.shoes.name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Shoes
+                        </span>
                       </div>
                     )}
 
-                    {/* Accessories Slot */}
-                    {rec.accessories && rec.accessories.length > 0 ? (
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full aspect-square rounded-xl overflow-hidden bg-white border border-amber-200 mb-1 shadow-2xs relative">
-                          <img src={rec.accessories[0].image_url} alt={rec.accessories[0].name} className="w-full h-full object-cover" />
-                          {rec.accessories.length > 1 && (
-                            <span className="absolute bottom-0 right-0 bg-[#8C6212] text-white text-[8px] font-bold px-1 rounded-tl">
-                              +{rec.accessories.length - 1}
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] font-bold text-[#1C1917] truncate w-full">{rec.accessories[0].name}</span>
-                        <span className="text-[9px] text-amber-700 font-semibold uppercase">Accessory</span>
-                      </div>
-                    ) : (
-                      <div className="hidden sm:flex flex-col items-center justify-center text-center border border-dashed border-stone-300 rounded-xl p-2 bg-stone-100/50">
-                        <Watch size={14} className="text-stone-400 mb-0.5" />
-                        <span className="text-[9px] text-stone-400 font-bold uppercase">Watch / Bag</span>
+                    {/* Accessory */}
+                    {rec.accessories && rec.accessories.length > 0 && (
+                      <div className="group relative aspect-square rounded-2xl overflow-hidden bg-stone-100 border border-stone-200 shadow-2xs">
+                        <img
+                          src={rec.accessories[0].image_url}
+                          alt={rec.accessories[0].name}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                        <span className="absolute bottom-1.5 left-1.5 bg-black/65 backdrop-blur-xs text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md">
+                          Accessory
+                        </span>
+                        {rec.accessories.length > 1 && (
+                          <span className="absolute top-1.5 right-1.5 bg-[#8C6212] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md">
+                            +{rec.accessories.length - 1}
+                          </span>
+                        )}
                       </div>
                     )}
                   </div>
-
-                  {/* Rationale Explanation */}
-                  <p className="text-xs text-[#57534E] leading-relaxed bg-[#FAF8F5] p-3 rounded-xl border border-[#D4AF37]/20 mt-3">
-                    💡 {rec.explanation}
-                  </p>
                 </div>
 
-                {/* Action Bar */}
-                <div className="mt-5 pt-4 border-t border-[#E7E5E4] flex items-center justify-between">
-                  <div className="text-[11px] font-semibold text-[#78716C] flex items-center gap-1.5">
-                    <span>{rec.weather_badge}</span>
-                  </div>
-
+                {/* Minimal Footer */}
+                <div className="mt-4 pt-3 border-t border-[#E7E5E4] flex items-center justify-end">
                   <button
                     onClick={() => handleSaveOutfit(rec)}
                     disabled={isSaved || isSaving}
@@ -585,11 +568,11 @@ export default function RecommendationsPage() {
                       <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : isSaved ? (
                       <>
-                        <Check size={14} /> Saved in Lookbook
+                        <Check size={14} /> Saved
                       </>
                     ) : (
                       <>
-                        <Heart size={14} /> Save Packet
+                        <Heart size={14} /> Save Set
                       </>
                     )}
                   </button>
