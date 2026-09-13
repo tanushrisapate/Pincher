@@ -274,3 +274,109 @@ export function scoreColorCompatibility(color1, color2) {
   
   return Math.max(0, Math.min(100, score));
 }
+
+/**
+ * Validates whether a string is a valid 3- or 6-digit hex color.
+ */
+export function isValidHex(hex) {
+  if (!hex || typeof hex !== 'string') return false;
+  return /^#?([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(hex.trim());
+}
+
+/**
+ * Normalizes a hex string to uppercase 6-digit #RRGGBB format.
+ */
+export function normalizeHex(hex) {
+  if (!hex) return "#000000";
+  let h = hex.trim().replace(/^#/, '');
+  if (h.length === 3) {
+    h = h.split('').map(c => c + c).join('');
+  }
+  if (h.length === 6) {
+    return '#' + h.toUpperCase();
+  }
+  return '#' + h.padEnd(6, '0').toUpperCase().slice(0, 6);
+}
+
+/**
+ * Converts HSV to RGB.
+ * @param {number} h - Hue (0-360)
+ * @param {number} s - Saturation (0-100)
+ * @param {number} v - Value/Brightness (0-100)
+ */
+export function hsvToRgb(h, s, v) {
+  const sat = Math.max(0, Math.min(100, s)) / 100;
+  const val = Math.max(0, Math.min(100, v)) / 100;
+  const hue = ((h % 360) + 360) % 360;
+
+  const c = val * sat;
+  const x = c * (1 - Math.abs(((hue / 60) % 2) - 1));
+  const m = val - c;
+
+  let r = 0, g = 0, b = 0;
+  if (hue >= 0 && hue < 60) { r = c; g = x; b = 0; }
+  else if (hue >= 60 && hue < 120) { r = x; g = c; b = 0; }
+  else if (hue >= 120 && hue < 180) { r = 0; g = c; b = x; }
+  else if (hue >= 180 && hue < 240) { r = 0; g = x; b = c; }
+  else if (hue >= 240 && hue < 300) { r = x; g = 0; b = c; }
+  else if (hue >= 300 && hue < 360) { r = c; g = 0; b = x; }
+
+  return {
+    r: Math.round((r + m) * 255),
+    g: Math.round((g + m) * 255),
+    b: Math.round((b + m) * 255)
+  };
+}
+
+/**
+ * Converts RGB to HSV.
+ */
+export function rgbToHsv(r, g, b) {
+  const red = r / 255;
+  const green = g / 255;
+  const blue = b / 255;
+
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const diff = max - min;
+
+  let h = 0;
+  let s = max === 0 ? 0 : (diff / max) * 100;
+  let v = max * 100;
+
+  if (diff !== 0) {
+    if (max === red) {
+      h = ((green - blue) / diff) % 6;
+    } else if (max === green) {
+      h = (blue - red) / diff + 2;
+    } else {
+      h = (red - green) / diff + 4;
+    }
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+  }
+
+  return {
+    h: Math.round(h),
+    s: Math.round(s),
+    v: Math.round(v)
+  };
+}
+
+/**
+ * Converts HEX to HSV.
+ */
+export function hexToHsv(hex) {
+  if (!isValidHex(hex)) return { h: 0, s: 0, v: 0 };
+  const rgb = hexToRgb(hex);
+  return rgbToHsv(rgb.r, rgb.g, rgb.b);
+}
+
+/**
+ * Converts HSV to HEX.
+ */
+export function hsvToHex(h, s, v) {
+  const { r, g, b } = hsvToRgb(h, s, v);
+  return rgbToHex(r, g, b);
+}
+

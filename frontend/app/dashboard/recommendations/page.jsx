@@ -1,45 +1,48 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import {
   Sparkles,
-  Upload,
-  Heart,
+  Bookmark,
   Check,
   RefreshCw,
   Sun,
   Snowflake,
   Flame,
-  ShieldCheck,
-  AlertCircle,
-  Tag,
-  Shirt,
-  Watch,
-  Sliders,
-  Layers,
-  Info,
-  CalendarDays
+  CloudRain,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  ArrowRight,
+  Upload
 } from "lucide-react";
 
 const WEEKDAYS = [
-  { id: "monday", label: "Monday", short: "Mon", icon: "💼", theme: "Executive Focus" },
-  { id: "tuesday", label: "Tuesday", short: "Tue", icon: "⚡", theme: "Smart Productivity" },
-  { id: "wednesday", label: "Wednesday", short: "Wed", icon: "✨", theme: "Midweek Balance" },
-  { id: "thursday", label: "Thursday", short: "Thu", icon: "🧥", theme: "Creative Layering" },
-  { id: "friday", label: "Friday", short: "Fri", icon: "🥂", theme: "Desk to Dinner" },
-  { id: "saturday", label: "Saturday", short: "Sat", icon: "🌿", theme: "Weekend Social" },
-  { id: "sunday", label: "Sunday", short: "Sun", icon: "☕", theme: "Relaxed Reset" },
+  { id: "monday", label: "Mon", full: "Monday" },
+  { id: "tuesday", label: "Tue", full: "Tuesday" },
+  { id: "wednesday", label: "Wed", full: "Wednesday" },
+  { id: "thursday", label: "Thu", full: "Thursday" },
+  { id: "friday", label: "Fri", full: "Friday" },
+  { id: "saturday", label: "Sat", full: "Saturday" },
+  { id: "sunday", label: "Sun", full: "Sunday" },
 ];
 
 const OCCASIONS = [
-  { id: "casual", label: "Casual Everyday", icon: "✨", desc: "Relaxed tops, versatile jeans, sneakers & watches" },
-  { id: "formal", label: "Work / Formal", icon: "💼", desc: "Crisp shirts, blazers, tailored trousers & oxfords" },
-  { id: "party", label: "Evening / Party", icon: "🥂", desc: "Glamorous dresses, statement layers & chic accessories" },
-  { id: "date", label: "Date Night", icon: "🍷", desc: "Refined elevated ensembles with harmonious accents" },
-  { id: "outdoor", label: "Outdoor / Active", icon: "🌿", desc: "Weather-ready jackets, durable footwear & activewear" },
+  { id: "casual", label: "Casual" },
+  { id: "formal", label: "Work" },
+  { id: "party", label: "Evening" },
+  { id: "date", label: "Date" },
+  { id: "outdoor", label: "Outdoor" },
+];
+
+const WEATHER_PRESETS = [
+  { label: "Winter", temp: 8, cond: "Cold", icon: Snowflake },
+  { label: "Rain", temp: 18, cond: "Rainy", icon: CloudRain },
+  { label: "Autumn", temp: 16, cond: "Breezy", icon: Sun },
+  { label: "Spring", temp: 22, cond: "Pleasant", icon: Sun },
+  { label: "Summer", temp: 32, cond: "Sunny", icon: Flame },
 ];
 
 export default function RecommendationsPage() {
@@ -48,28 +51,52 @@ export default function RecommendationsPage() {
     new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
   );
   const [occasion, setOccasion] = useState("casual");
-  const [temperature, setTemperature] = useState(16.0);
-  const [weatherCondition, setWeatherCondition] = useState("Cool & Breezy");
+  const [temperature, setTemperature] = useState(22.0);
+  const [weatherCondition, setWeatherCondition] = useState("Clear");
   const [recommendations, setRecommendations] = useState([]);
+  const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [savedOutfitIds, setSavedOutfitIds] = useState(new Set());
   const [saveLoadingId, setSaveLoadingId] = useState(null);
   const [wardrobeCount, setWardrobeCount] = useState(0);
   const [wardrobeItemsCache, setWardrobeItemsCache] = useState([]);
+  const [showAdvancedWeather, setShowAdvancedWeather] = useState(false);
+  const [userPrefs, setUserPrefs] = useState(null);
 
-  const isCold = temperature < 18.0;
-  const isHot = temperature > 26.0;
-
-  // Load weather and check wardrobe item count
+  // Load weather, profile preferences, and check wardrobe item count on mount
   useEffect(() => {
     async function initContext() {
       try {
+        // Load profile preferences
+        let loadedPrefs = null;
+        try {
+          const cached = localStorage.getItem("pincher_profile_preferences");
+          if (cached) loadedPrefs = JSON.parse(cached);
+        } catch (e) {}
+
+        if (!loadedPrefs) {
+          try {
+            const pRes = await fetch("/api/profile/preferences");
+            if (pRes.ok) {
+              const pData = await pRes.json();
+              loadedPrefs = pData.preferences;
+            }
+          } catch (e) {}
+        }
+        if (loadedPrefs) {
+          setUserPrefs(loadedPrefs);
+        }
+
         const weatherRes = await fetch("http://localhost:8000/api/weather/current?lat=28.6139&lon=77.2090&city=Delhi").catch(() => null);
+        let currentTemp = 22.0;
+        let currentCond = "Clear";
         if (weatherRes && weatherRes.ok) {
           const w = await weatherRes.json();
           if (w.data) {
-            setTemperature(w.data.temperature);
-            setWeatherCondition(w.data.condition || "Clear");
+            currentTemp = w.data.temperature;
+            currentCond = w.data.condition || "Clear";
+            setTemperature(currentTemp);
+            setWeatherCondition(currentCond);
           }
         }
 
@@ -81,7 +108,7 @@ export default function RecommendationsPage() {
           setWardrobeItemsCache(items);
           if (items.length > 0) {
             const todayDay = new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-            fetchRecommendations("casual", items, temperature, todayDay);
+            fetchRecommendations("casual", items, currentTemp, todayDay, currentCond, loadedPrefs);
           }
         }
       } catch (err) {
@@ -96,10 +123,16 @@ export default function RecommendationsPage() {
     selectedOccasion = occasion,
     cachedItems = wardrobeItemsCache,
     targetTemp = temperature,
-    dayKey = selectedDay
+    dayKey = selectedDay,
+    cond = weatherCondition,
+    prefs = userPrefs
   ) => {
     setIsLoading(true);
+    setSelectedIndex(0);
     try {
+      const preferredColor = prefs?.favoriteColors?.[0] || null;
+      const avoidColor = prefs?.avoidColors?.[0] || null;
+
       const res = await fetch("http://localhost:8000/api/outfits/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -108,9 +141,11 @@ export default function RecommendationsPage() {
           occasion: selectedOccasion,
           day_of_week: dayKey,
           temperature: targetTemp,
-          weather_condition: weatherCondition,
-          persona: user?.persona || "classic",
-          max_packets: 5,
+          weather_condition: cond,
+          preferred_color: preferredColor,
+          avoid_color: avoidColor,
+          persona: user?.persona || (prefs?.selectedStyles?.[0]?.toLowerCase()) || "classic",
+          max_packets: 4,
           strict_weather: true,
         }),
       });
@@ -119,16 +154,39 @@ export default function RecommendationsPage() {
         const data = await res.json();
         setRecommendations(data.recommendations || []);
       } else {
-        const items = cachedItems.length > 0 ? cachedItems : (await (await fetch("/api/wardrobe")).json()).items || [];
+        let items = cachedItems.length > 0 ? cachedItems : (await (await fetch("/api/wardrobe")).json()).items || [];
         const isColdClimate = targetTemp < 18.0;
         const coldTopKeywords = ["sweater", "hoodie", "cardigan", "sweatshirt", "long sleeve", "knit", "jacket", "flannel", "wool"];
         const coldBottomExcluded = ["short", "shorts", "mini", "swim"];
+
+        // Apply color preference filters
+        const avoidList = (prefs?.avoidColors || []).map((c) => c.toLowerCase());
+        const favList = (prefs?.favoriteColors || []).map((c) => c.toLowerCase());
+
+        // Sort items so favorite colors come first, and avoided colors come last
+        items = [...items].sort((a, b) => {
+          const aHex = (a.color_hex || "").toLowerCase();
+          const bHex = (b.color_hex || "").toLowerCase();
+          const aIsFav = favList.includes(aHex) ? 1 : 0;
+          const bIsFav = favList.includes(bHex) ? 1 : 0;
+          const aIsAvoid = avoidList.includes(aHex) ? 1 : 0;
+          const bIsAvoid = avoidList.includes(bHex) ? 1 : 0;
+          return (bIsFav - aIsFav) || (aIsAvoid - bIsAvoid);
+        });
 
         let tops = items.filter((i) => i.category.toLowerCase() === "tops");
         let bottoms = items.filter((i) => i.category.toLowerCase() === "bottoms");
         let shoes = items.filter((i) => i.category.toLowerCase() === "shoes");
         let outerwear = items.filter((i) => i.category.toLowerCase() === "outerwear");
         let accessories = items.filter((i) => i.category.toLowerCase() === "accessories");
+
+        // Prefer non-avoid items if available
+        if (tops.some((t) => !avoidList.includes((t.color_hex || "").toLowerCase()))) {
+          tops = tops.filter((t) => !avoidList.includes((t.color_hex || "").toLowerCase()));
+        }
+        if (bottoms.some((b) => !avoidList.includes((b.color_hex || "").toLowerCase()))) {
+          bottoms = bottoms.filter((b) => !avoidList.includes((b.color_hex || "").toLowerCase()));
+        }
 
         if (isColdClimate) {
           const warmTops = tops.filter((t) => coldTopKeywords.some((k) => (t.name || "").toLowerCase().includes(k)));
@@ -138,54 +196,29 @@ export default function RecommendationsPage() {
           if (longBottoms.length > 0) bottoms = longBottoms;
         }
 
-        const dayInfo = WEEKDAYS.find((d) => d.id === dayKey) || WEEKDAYS[0];
-        const generatedPackets = [];
+        const generated = [];
+        tops.forEach((top, tIdx) => {
+          bottoms.forEach((bottom, bIdx) => {
+            if (generated.length < 4) {
+              const pairShoes = shoes[(tIdx + bIdx) % Math.max(1, shoes.length)] || null;
+              const pairOuterwear = isColdClimate ? (outerwear[tIdx % Math.max(1, outerwear.length)] || null) : null;
+              const pairAcc = accessories[tIdx % Math.max(1, accessories.length)] || null;
 
-        // Generate full combinations of tops and bottoms
-        const candidateCombos = [];
-        tops.forEach((top) => {
-          bottoms.forEach((bottom) => {
-            candidateCombos.push({ top, bottom });
+              generated.push({
+                id: `packet-gen-${tIdx}-${bIdx}`,
+                title: `${OCCASIONS.find((o) => o.id === selectedOccasion)?.label || "Daily"} Outfit`,
+                top,
+                bottom,
+                shoes: pairShoes,
+                outerwear: pairOuterwear,
+                accessories: pairAcc ? [pairAcc] : [],
+                explanation: `Coordinated look attuned to ${Math.round(targetTemp)}°C ${cond}`,
+              });
+            }
           });
         });
 
-        // Add dresses
-        dresses.forEach((dress) => {
-          candidateCombos.push({ dress });
-        });
-
-        const selectedCombos = candidateCombos.length > 0
-          ? candidateCombos.slice(0, 5)
-          : tops.slice(0, 4).map((top, idx) => ({
-              top,
-              bottom: bottoms[idx % Math.max(1, bottoms.length)] || null,
-            }));
-
-        selectedCombos.forEach((combo, idx) => {
-          const shoe = shoes.length > 0 ? shoes[idx % shoes.length] : null;
-          const outer = (isColdClimate || outerwear.length > 0) ? outerwear[idx % outerwear.length] : null;
-          const accs = accessories.slice(idx * 2, idx * 2 + 2);
-
-          generatedPackets.push({
-            id: `packet-${idx + 1}`,
-            packet_number: idx + 1,
-            title: `${dayInfo.label} Set #${idx + 1}`,
-            day_of_week: dayInfo.label,
-            occasion: selectedOccasion,
-            top: combo.top || null,
-            bottom: combo.bottom || null,
-            dress: combo.dress || null,
-            shoes: shoe,
-            outerwear: outer,
-            accessories: accs,
-            scores: { color_harmony: 95.0, weather_fit: 96.0, persona_match: 95.0, total_score: 95.0 },
-            explanation: `${dayInfo.label} Outfit Set`,
-            weather_badge: `${Math.round(targetTemp)}°C • ${weatherCondition}`,
-            harmony_tag: "Harmonious",
-          });
-        });
-
-        setRecommendations(generatedPackets);
+        setRecommendations(generated);
       }
     } catch (err) {
       console.warn("Recommendation engine fallback:", err);
@@ -194,515 +227,429 @@ export default function RecommendationsPage() {
     }
   };
 
-  const handleDayChange = (dayId) => {
-    setSelectedDay(dayId);
-    fetchRecommendations(occasion, wardrobeItemsCache, temperature, dayId);
-  };
-
-  const handleOccasionChange = (occId) => {
-    setOccasion(occId);
-    fetchRecommendations(occId, wardrobeItemsCache, temperature, selectedDay);
-  };
-
-  const handleTempChange = (newTemp) => {
-    setTemperature(newTemp);
-    fetchRecommendations(occasion, wardrobeItemsCache, newTemp, selectedDay);
-  };
-
-  const handleSaveOutfit = async (packet) => {
-    setSaveLoadingId(packet.id);
+  const handleSaveOutfit = async (outfit) => {
+    if (!outfit) return;
+    setSaveLoadingId(outfit.id);
     try {
-      const res = await fetch("http://localhost:8000/api/outfits/save", {
+      await fetch("http://localhost:8000/api/outfits/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          title: packet.title,
-          top_item_id: packet.top?.id || null,
-          bottom_item_id: packet.bottom?.id || null,
-          outerwear_item_id: packet.outerwear?.id || null,
-          shoes_item_id: packet.shoes?.id || null,
-          accessory_item_id: packet.accessories?.[0]?.id || null,
+          title: outfit.title,
+          top_item_id: outfit.top?.id || null,
+          bottom_item_id: outfit.bottom?.id || null,
+          outerwear_item_id: outfit.outerwear?.id || null,
+          shoes_item_id: outfit.shoes?.id || null,
+          accessory_item_id: outfit.accessories?.[0]?.id || null,
           occasion: occasion,
-          harmony_score: packet.scores?.color_harmony || 90.0,
-          explanation: packet.explanation,
+          harmony_score: 92.0,
+          explanation: outfit.explanation || "Saved from AI Stylist",
         }),
       });
 
-      setSavedOutfitIds((prev) => new Set([...prev, packet.id]));
+      setSavedOutfitIds((prev) => new Set([...prev, outfit.id]));
     } catch (err) {
-      console.error("Failed to save packet:", err);
+      console.error("Failed to save outfit:", err);
     } finally {
       setSaveLoadingId(null);
     }
   };
 
-  const container = {
-    hidden: { opacity: 0 },
-    show: { opacity: 1, transition: { staggerChildren: 0.1 } },
-  };
-
-  const item = {
-    hidden: { opacity: 0, y: 16 },
-    show: { opacity: 1, y: 0 },
-  };
+  const currentOutfit = recommendations[selectedIndex] || null;
+  const otherOptions = recommendations.filter((_, idx) => idx !== selectedIndex);
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-16">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="space-y-5 pb-8">
+      {/* 1. Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#111111]">
+          AI Stylist
+        </h1>
+        <p className="text-xs sm:text-sm text-[#737373] mt-1">
+          Get an outfit from your clothes based on your day, occasion and weather.
+        </p>
+      </div>
+
+      {/* 2. Main Selector Box */}
+      <div className="bg-white border border-[#EEEEEE] rounded-2xl p-5 sm:p-6 shadow-2xs space-y-4">
+        {/* 1. What are you dressing for? */}
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#8C6212] mb-1">
-            <Layers size={14} /> Condition-Based Outfit Packet Engine
+          <span className="text-xs font-bold text-[#111111] block mb-2.5">
+            1. What are you dressing for?
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {OCCASIONS.map((occ) => {
+              const isSelected = occasion === occ.id;
+              return (
+                <button
+                  key={occ.id}
+                  onClick={() => {
+                    setOccasion(occ.id);
+                    fetchRecommendations(occ.id, wardrobeItemsCache, temperature, selectedDay, weatherCondition);
+                  }}
+                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-colors ${
+                    isSelected
+                      ? "bg-[#FDFBF7] text-[#A86E18] border border-[#A86E18] font-semibold"
+                      : "bg-white text-[#525252] border border-[#E5E5E5] hover:border-stone-300"
+                  }`}
+                >
+                  {occ.label}
+                </button>
+              );
+            })}
           </div>
-          <h1 className="text-3xl font-serif font-bold text-[#1C1917]">
-            Curated Wardrobe Packets 📦✨
-          </h1>
-          <p className="text-[#78716C] text-sm mt-1">
-            Complete, coordinated sets (Top + Bottom + Outerwear + Shoes + Accessories) 100% synthesized from your clothes.
-          </p>
         </div>
 
-        <div className="flex items-center gap-3">
+        {/* 2. When? */}
+        <div>
+          <span className="text-xs font-bold text-[#111111] block mb-2.5">
+            2. When?
+          </span>
+          <div className="flex flex-wrap gap-2">
+            {WEEKDAYS.map((day) => {
+              const isSelected = selectedDay === day.id;
+              return (
+                <button
+                  key={day.id}
+                  onClick={() => {
+                    setSelectedDay(day.id);
+                    fetchRecommendations(occasion, wardrobeItemsCache, temperature, day.id, weatherCondition);
+                  }}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    isSelected
+                      ? "bg-[#FDFBF7] text-[#A86E18] border border-[#A86E18] font-semibold"
+                      : "bg-white text-[#525252] border border-[#E5E5E5] hover:border-stone-300"
+                  }`}
+                >
+                  {day.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* 3. Weather */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-bold text-[#111111]">
+              3. Weather
+            </span>
+            <button
+              onClick={() => setShowAdvancedWeather(!showAdvancedWeather)}
+              className="text-xs text-[#A86E18] hover:underline flex items-center gap-0.5 font-medium"
+            >
+              <span>Advanced</span>
+              {showAdvancedWeather ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
+          </div>
+
+          {/* Weather Status Row */}
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-base">☀️</span>
+            <span className="text-xs font-bold text-[#111111]">
+              {Math.round(temperature)}°C
+            </span>
+            <span className="text-xs text-[#737373]">
+              {weatherCondition}
+            </span>
+            <button
+              onClick={() => setShowAdvancedWeather(!showAdvancedWeather)}
+              className="ml-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border border-[#E5E5E5] text-[11px] text-[#525252] hover:bg-stone-50 transition-colors"
+            >
+              <span>✎ Change</span>
+            </button>
+          </div>
+
+          {/* Weather Presets */}
+          <div className="flex flex-wrap gap-2">
+            {WEATHER_PRESETS.map((preset) => {
+              const Icon = preset.icon;
+              const isActive = Math.round(temperature) === preset.temp;
+              return (
+                <button
+                  key={preset.label}
+                  onClick={() => {
+                    setTemperature(preset.temp);
+                    setWeatherCondition(preset.cond);
+                    fetchRecommendations(occasion, wardrobeItemsCache, preset.temp, selectedDay, preset.cond);
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-colors ${
+                    isActive
+                      ? "bg-[#FDFBF7] text-[#A86E18] border border-[#A86E18] font-semibold"
+                      : "bg-white text-[#525252] border border-[#E5E5E5] hover:border-stone-300"
+                  }`}
+                >
+                  <Icon size={12} className={isActive ? "text-[#A86E18]" : "text-[#737373]"} />
+                  <span>{preset.label}</span>
+                  <span className="text-[10px] text-[#A8A29E]">({preset.temp}°C)</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Collapsible Advanced Climate Slider */}
+          {showAdvancedWeather && (
+            <div className="mt-3 pt-3 border-t border-stone-100 flex items-center gap-3">
+              <span className="text-xs text-stone-600 shrink-0">Custom Temp:</span>
+              <input
+                type="range"
+                min="-5"
+                max="40"
+                value={temperature}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  setTemperature(val);
+                  fetchRecommendations(occasion, wardrobeItemsCache, val, selectedDay, weatherCondition);
+                }}
+                className="w-36 accent-[#A86E18]"
+              />
+              <span className="text-xs font-bold text-stone-800">{Math.round(temperature)}°C</span>
+            </div>
+          )}
+        </div>
+
+        {/* Generate Outfit Button */}
+        <div className="pt-2 text-center">
           <button
-            onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature, selectedDay)}
+            onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature, selectedDay, weatherCondition)}
             disabled={isLoading || wardrobeCount === 0}
-            className="px-4 py-2.5 bg-[#B8860B] hover:bg-[#8C6212] text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-[#B8860B]/20 flex items-center gap-2 disabled:opacity-50 cursor-pointer"
+            className="w-full max-w-sm mx-auto bg-[#A86E18] hover:bg-[#925f14] text-white px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors shadow-2xs disabled:opacity-50"
           >
-            <RefreshCw size={14} className={isLoading ? "animate-spin" : ""} />
-            <span>Regenerate Sets</span>
+            <Sparkles size={14} className={isLoading ? "animate-spin" : ""} />
+            <span>Generate Outfit</span>
           </button>
         </div>
       </div>
 
-      {/* 1. Day of the Week Wardrobe Planner */}
-      <div className="bg-white/80 backdrop-blur-xl border border-[#E7E5E4] rounded-2xl p-5 shadow-2xs space-y-3">
+      {/* 3. Your Recommended Outfit Card */}
+      <div className="bg-white border border-[#EEEEEE] rounded-2xl p-5 sm:p-6 shadow-2xs space-y-5">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <CalendarDays size={16} className="text-[#8C6212]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">
-              1. Select Day of the Week
-            </span>
-          </div>
-          <span className="text-xs text-[#8C6212] font-semibold">
-            {WEEKDAYS.find((d) => d.id === selectedDay)?.theme}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-2">
-          {WEEKDAYS.map((day) => {
-            const isSelected = selectedDay === day.id;
-            return (
-              <button
-                key={day.id}
-                onClick={() => handleDayChange(day.id)}
-                className={`p-3 rounded-xl text-center transition-all border flex flex-col items-center justify-center gap-1.5 cursor-pointer ${
-                  isSelected
-                    ? "bg-[#FAF8F5] border-[#B8860B] shadow-xs text-[#8C6212] ring-2 ring-[#B8860B]/20"
-                    : "bg-white border-[#E7E5E4] hover:border-[#D4AF37]/50 text-[#44403C]"
-                }`}
-              >
-                <span className="text-base">{day.icon}</span>
-                <span className="text-xs font-bold">{day.label}</span>
-                <span className="text-[10px] text-stone-400 font-medium">{day.theme}</span>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 2. Occasion & Condition Selector */}
-      <div className="bg-white/80 backdrop-blur-xl border border-[#E7E5E4] rounded-2xl p-5 shadow-2xs space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">2. Occasion & Dress Code</span>
-          <span className="text-xs text-[#8C6212] font-semibold">
-            {OCCASIONS.find((o) => o.id === occasion)?.desc}
-          </span>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5">
-          {OCCASIONS.map((occ) => {
-            const isSelected = occasion === occ.id;
-            return (
-              <button
-                key={occ.id}
-                onClick={() => handleOccasionChange(occ.id)}
-                className={`p-3 rounded-xl text-left transition-all border flex flex-col justify-between gap-2 cursor-pointer ${
-                  isSelected
-                    ? "bg-[#FAF8F5] border-[#B8860B] shadow-xs text-[#8C6212]"
-                    : "bg-white border-[#E7E5E4] hover:border-[#D4AF37]/50 text-[#44403C]"
-                }`}
-              >
-                <div className="text-lg">{occ.icon}</div>
-                <div>
-                  <div className="text-xs font-bold">{occ.label}</div>
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Temperature & Weather Protocol Simulator (Manual Input + Quick Presets) */}
-      <div className="bg-white/80 backdrop-blur-xl border border-[#E7E5E4] rounded-2xl p-5 shadow-2xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <Sliders size={16} className="text-[#8C6212]" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#57534E]">3. Manual Climate & Season Simulator</span>
+          <div>
+            <h2 className="text-base font-bold text-[#111111]">
+              Your Recommended Outfit
+            </h2>
+            <p className="text-xs text-[#737373] mt-0.5">
+              Based on your wardrobe, weather and occasion.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
-            <div className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 ${
-              weatherCondition.toLowerCase().includes("rain")
-                ? "bg-cyan-50 text-cyan-800 border border-cyan-200"
-                : isCold
-                ? "bg-blue-50 text-blue-800 border border-blue-200"
-                : isHot
-                ? "bg-amber-50 text-amber-800 border border-amber-200"
-                : "bg-emerald-50 text-emerald-800 border border-emerald-200"
-            }`}>
-              {weatherCondition.toLowerCase().includes("rain") ? (
-                <span>🌧️</span>
-              ) : isCold ? (
-                <Snowflake size={13} />
-              ) : isHot ? (
-                <Flame size={13} />
+            <button
+              onClick={() => currentOutfit && handleSaveOutfit(currentOutfit)}
+              disabled={savedOutfitIds.has(currentOutfit?.id) || saveLoadingId === currentOutfit?.id}
+              className="w-8 h-8 rounded-lg border border-[#E5E5E5] flex items-center justify-center text-[#525252] hover:bg-stone-50 transition-colors"
+              title="Save Outfit"
+            >
+              {savedOutfitIds.has(currentOutfit?.id) ? (
+                <Check size={14} className="text-emerald-600" />
               ) : (
-                <Sun size={13} />
+                <Bookmark size={14} />
               )}
-              <span>
-                {Math.round(temperature)}°C • {weatherCondition} —{" "}
-                {weatherCondition.toLowerCase().includes("rain")
-                  ? "Rain Protocol (Protective Layers & Boots)"
-                  : isCold
-                  ? "Cold Protocol (Full Sleeves & Heavy Outerwear)"
-                  : isHot
-                  ? "Warm Protocol (Breathable Fabrics & Shorts Allowed)"
-                  : "Mild Balanced Protocol"}
+            </button>
+
+            <button
+              onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature, selectedDay, weatherCondition)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#E5E5E5] text-xs font-semibold text-[#525252] hover:bg-stone-50 transition-colors"
+            >
+              <RefreshCw size={12} className={isLoading ? "animate-spin" : ""} />
+              <span>Regenerate</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Outfit Grid + Right Details */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:items-center justify-between">
+          {/* Left: 2x3 Grid of 6 items */}
+          <div className="grid grid-cols-3 gap-3 flex-1 max-w-md">
+            {/* 1. Top */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.top?.image_url || "https://images.unsplash.com/photo-1581655353564-df123a1eb820?w=400"}
+                  alt="Top"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Top
+              </span>
+            </div>
+
+            {/* 2. Bottom */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.bottom?.image_url || "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?w=400"}
+                  alt="Bottom"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Bottom
+              </span>
+            </div>
+
+            {/* 3. Shoes */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.shoes?.image_url || "https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400"}
+                  alt="Shoes"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Shoes
+              </span>
+            </div>
+
+            {/* 4. Accessory (Watch) */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.accessories?.[0]?.image_url || "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400"}
+                  alt="Accessory"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Accessory
+              </span>
+            </div>
+
+            {/* 5. Accessory (Sunglasses) */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.accessories?.[1]?.image_url || "https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=400"}
+                  alt="Accessory"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Accessory
+              </span>
+            </div>
+
+            {/* 6. Accessory (Cap) */}
+            <div>
+              <div className="aspect-square rounded-xl bg-[#F6F6F5] p-2 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/60">
+                <img
+                  src={currentOutfit?.outerwear?.image_url || "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?w=400"}
+                  alt="Accessory"
+                  className="max-h-full max-w-full object-contain"
+                />
+              </div>
+              <span className="text-[10px] text-[#737373] text-center block mt-1">
+                Accessory
               </span>
             </div>
           </div>
-        </div>
 
-        {/* Quick Weather Presets */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 pt-1">
-          {[
-            { label: "Winter Freeze", temp: 2, cond: "Snow & Ice", icon: "❄️", bg: "hover:bg-blue-50 hover:border-blue-300" },
-            { label: "Monsoon Rain", temp: 18, cond: "Heavy Rain", icon: "🌧️", bg: "hover:bg-cyan-50 hover:border-cyan-300" },
-            { label: "Crisp Autumn", temp: 14, cond: "Cool Breeze", icon: "🍂", bg: "hover:bg-orange-50 hover:border-orange-300" },
-            { label: "Mild Spring", temp: 22, cond: "Clear Sky", icon: "🌤️", bg: "hover:bg-emerald-50 hover:border-emerald-300" },
-            { label: "Summer Heat", temp: 33, cond: "Hot & Sunny", icon: "☀️", bg: "hover:bg-amber-50 hover:border-amber-300" },
-          ].map((preset) => {
-            const isActive = Math.round(temperature) === preset.temp && weatherCondition === preset.cond;
-            return (
-              <button
-                key={preset.label}
-                type="button"
-                onClick={() => {
-                  setTemperature(preset.temp);
-                  setWeatherCondition(preset.cond);
-                  fetchRecommendations(occasion, wardrobeItemsCache, preset.temp);
-                }}
-                className={`px-3 py-2 rounded-xl text-xs font-bold border flex items-center justify-between transition-all cursor-pointer ${
-                  isActive
-                    ? "bg-[#FAF8F5] border-[#B8860B] text-[#8C6212] shadow-xs"
-                    : `bg-stone-50 border-stone-200 text-stone-700 ${preset.bg}`
-                }`}
-              >
-                <div className="flex items-center gap-1.5">
-                  <span>{preset.icon}</span>
-                  <span>{preset.label}</span>
-                </div>
-                <span className="text-[10px] opacity-75 font-mono">{preset.temp}°C</span>
-              </button>
-            );
-          })}
-        </div>
+          {/* Right Column: Details & Checkmarks */}
+          <div className="lg:w-72 shrink-0">
+            <h3 className="text-base font-bold text-[#111111]">
+              Smart & Comfortable
+            </h3>
+            <p className="text-xs text-[#737373] mt-1 mb-4">
+              A relaxed and stylish look for your Sunday.
+            </p>
 
-        {/* Manual Temperature & Custom Condition Input Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-stone-100">
-          {/* Direct Numeric Input */}
-          <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-stone-200 shadow-2xs">
-            <span className="text-xs font-bold text-stone-600 shrink-0">Manual Temp:</span>
-            <input
-              type="number"
-              value={temperature}
-              onChange={(e) => {
-                const val = parseFloat(e.target.value) || 0;
-                setTemperature(val);
-                fetchRecommendations(occasion, wardrobeItemsCache, val);
-              }}
-              className="w-20 font-mono font-bold text-sm text-[#1C1917] bg-stone-50 px-2 py-1 rounded-lg border border-stone-300 focus:outline-[#B8860B]"
-              min="-20"
-              max="50"
-              step="1"
-            />
-            <span className="text-xs font-bold text-stone-500">°C</span>
+            <div className="space-y-2.5">
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-[#A86E18] text-white flex items-center justify-center text-[10px] shrink-0 font-bold">
+                  ✓
+                </span>
+                <span className="text-xs text-[#525252] font-medium">
+                  Matches the weather
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-[#A86E18] text-white flex items-center justify-center text-[10px] shrink-0 font-bold">
+                  ✓
+                </span>
+                <span className="text-xs text-[#525252] font-medium">
+                  Uses your own clothes
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="w-4 h-4 rounded-full bg-[#A86E18] text-white flex items-center justify-center text-[10px] shrink-0 font-bold">
+                  ✓
+                </span>
+                <span className="text-xs text-[#525252] font-medium">
+                  Comfortable and versatile
+                </span>
+              </div>
+            </div>
           </div>
-
-          {/* Weather Condition Dropdown / Input */}
-          <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-stone-200 shadow-2xs md:col-span-2">
-            <span className="text-xs font-bold text-stone-600 shrink-0">Weather Sky:</span>
-            <input
-              type="text"
-              value={weatherCondition}
-              placeholder="e.g. Heavy Rain, Freezing Blizzard, Clear"
-              onChange={(e) => {
-                setWeatherCondition(e.target.value);
-              }}
-              onBlur={() => {
-                fetchRecommendations(occasion, wardrobeItemsCache, temperature);
-              }}
-              className="w-full text-xs font-semibold text-[#1C1917] bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-300 focus:outline-[#B8860B]"
-            />
-            <button
-              onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature)}
-              className="px-3 py-1.5 bg-[#8C6212] hover:bg-[#B8860B] text-white text-xs font-bold rounded-lg shrink-0 cursor-pointer transition-all"
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-
-        {/* Fine-Tuning Slider */}
-        <div className="flex items-center gap-4 pt-1">
-          <span className="text-xs text-blue-600 font-bold flex items-center gap-1 shrink-0">
-            <Snowflake size={12} /> -5°C Freezing
-          </span>
-          <input
-            type="range"
-            min="-5"
-            max="40"
-            step="1"
-            value={temperature}
-            onChange={(e) => handleTempChange(parseFloat(e.target.value))}
-            className="w-full accent-[#B8860B] cursor-pointer"
-          />
-          <span className="text-xs text-amber-600 font-bold flex items-center gap-1 shrink-0">
-            <Flame size={12} /> 40°C Heatwave
-          </span>
         </div>
       </div>
 
-      {/* Packets Grid */}
-      {wardrobeCount === 0 ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col items-center text-center p-12 bg-white/70 backdrop-blur-xl border border-[#E7E5E4] rounded-3xl shadow-sm"
-        >
-          <div className="w-16 h-16 rounded-2xl bg-[#B8860B]/10 flex items-center justify-center text-[#B8860B] mb-4">
-            <Upload className="w-8 h-8" />
-          </div>
-          <h2 className="text-2xl font-serif font-bold mb-2">Upload Clothes to Generate Condition Packets</h2>
-          <p className="text-[#78716C] text-sm max-w-md mx-auto mb-6">
-            Add tops, bottoms, outerwear, shoes, and accessories so the engine can formulate complete condition-based sets.
-          </p>
-          <Link href="/dashboard/upload">
-            <button className="px-6 py-3 bg-[#B8860B] hover:bg-[#8C6212] text-white rounded-xl font-bold text-xs shadow-md shadow-[#B8860B]/20 flex items-center gap-2 cursor-pointer">
-              <Upload className="w-4 h-4" /> Add Your Clothes
-            </button>
-          </Link>
-        </motion.div>
-      ) : isLoading ? (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {[1, 2].map((n) => (
-            <div key={n} className="bg-white/80 rounded-3xl border border-[#E7E5E4] p-6 animate-pulse space-y-4">
-              <div className="h-6 w-1/2 bg-stone-200 rounded" />
-              <div className="grid grid-cols-4 gap-3 h-36 bg-stone-100 rounded-2xl" />
-              <div className="h-4 bg-stone-200 rounded w-3/4" />
-            </div>
-          ))}
-        </div>
-      ) : recommendations.length > 0 ? (
-        <motion.div variants={container} initial="hidden" animate="show" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {recommendations.map((rec, idx) => {
-            const isSaved = savedOutfitIds.has(rec.id);
-            const isSaving = saveLoadingId === rec.id;
+      {/* 4. Other Options */}
+      <div className="space-y-2.5 pt-1">
+        <span className="text-xs font-bold text-[#111111] block">
+          Other Options
+        </span>
 
-            return (
-              <motion.div
-                key={rec.id || idx}
-                variants={item}
-                className="bg-white border border-stone-200 hover:border-[#D4AF37] rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between"
-              >
-                <div>
-                  {/* Clean Minimal Header */}
-                  <div className="flex items-center justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-2.5">
-                      <span className="text-xs font-black uppercase tracking-wider bg-[#8C6212] text-white px-3 py-1 rounded-lg shadow-2xs">
-                        SET {rec.packet_number || idx + 1}
-                      </span>
-                      <span className="text-sm font-serif font-bold text-[#1C1917]">
-                        {rec.title || `Packet #${rec.packet_number || idx + 1}`}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 px-2.5 py-0.5 rounded-full text-xs font-bold">
-                      <Sparkles size={12} className="text-emerald-600" />
-                      <span>{Math.round(rec.scores?.total_score || 95)}% Match</span>
-                    </div>
-                  </div>
-
-                  {/* Fashion Flat-Lay Ensemble Canvas (Matching Image 2) */}
-                  <div className="w-full aspect-[4/4.5] sm:aspect-square bg-white rounded-2xl p-4 flex items-center justify-center border border-stone-100 shadow-2xs overflow-hidden">
-                    {rec.dress ? (
-                      /* One-Piece Dress Layout */
-                      <div className="w-full h-full grid grid-cols-2 gap-4 items-center">
-                        {/* Left: Dress spanning vertically */}
-                        <div className="w-full h-full flex items-center justify-center p-2">
-                          <img
-                            src={rec.dress.image_url}
-                            alt={rec.dress.name}
-                            className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                          />
-                        </div>
-
-                        {/* Right: Layer above, Shoes below */}
-                        <div className="flex flex-col items-center justify-between h-full py-2 gap-3">
-                          <div className="w-full h-[48%] flex items-center justify-center">
-                            {rec.outerwear ? (
-                              <img
-                                src={rec.outerwear.image_url}
-                                alt={rec.outerwear.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : rec.accessories && rec.accessories.length > 0 ? (
-                              <img
-                                src={rec.accessories[0].image_url}
-                                alt={rec.accessories[0].name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : null}
-                          </div>
-
-                          <div className="w-full h-[48%] flex items-center justify-center relative">
-                            {rec.shoes && (
-                              <img
-                                src={rec.shoes.image_url}
-                                alt={rec.shoes.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      /* Two-Piece Top + Bottom Layout (Image 2 style) */
-                      <div className="w-full h-full grid grid-cols-2 gap-4 items-center">
-                        {/* Left Column: Top above, Bottom directly below (Body Silhouette) */}
-                        <div className="flex flex-col items-center justify-between h-full py-1 gap-2">
-                          <div className="w-full h-[48%] flex items-center justify-center">
-                            {rec.top ? (
-                              <img
-                                src={rec.top.image_url}
-                                alt={rec.top.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : null}
-                          </div>
-
-                          <div className="w-full h-[50%] flex items-center justify-center">
-                            {rec.bottom ? (
-                              <img
-                                src={rec.bottom.image_url}
-                                alt={rec.bottom.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : null}
-                          </div>
-                        </div>
-
-                        {/* Right Column: Outerwear / Layer top-right, Shoes bottom-right */}
-                        <div className="flex flex-col items-center justify-between h-full py-1 gap-2">
-                          <div className="w-full h-[48%] flex items-center justify-center">
-                            {rec.outerwear ? (
-                              <img
-                                src={rec.outerwear.image_url}
-                                alt={rec.outerwear.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : rec.accessories && rec.accessories.length > 0 ? (
-                              <img
-                                src={rec.accessories[0].image_url}
-                                alt={rec.accessories[0].name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : null}
-                          </div>
-
-                          <div className="w-full h-[48%] flex items-center justify-center relative">
-                            {rec.shoes ? (
-                              <img
-                                src={rec.shoes.image_url}
-                                alt={rec.shoes.name}
-                                className="max-h-full max-w-full object-contain drop-shadow-sm transition-transform duration-300 hover:scale-105"
-                              />
-                            ) : null}
-
-                            {/* Accessory floating accent if outerwear is also shown */}
-                            {rec.outerwear && rec.accessories && rec.accessories.length > 0 && (
-                              <div className="absolute -top-3 -right-2 w-11 h-11 rounded-xl bg-white border border-stone-200 shadow-xs p-1 flex items-center justify-center">
-                                <img
-                                  src={rec.accessories[0].image_url}
-                                  alt={rec.accessories[0].name}
-                                  className="max-h-full max-w-full object-contain"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Minimal Footer */}
-                <div className="mt-4 pt-3 border-t border-stone-100 flex items-center justify-between">
-                  <span className="text-xs text-stone-500 font-medium">
-                    {rec.day_of_week || "Curated Set"} • {rec.weather_badge || "All-Weather"}
-                  </span>
-
-                  <button
-                    onClick={() => handleSaveOutfit(rec)}
-                    disabled={isSaved || isSaving}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                      isSaved
-                        ? "bg-emerald-600 text-white"
-                        : "bg-[#B8860B] hover:bg-[#8C6212] text-white shadow-xs"
-                    }`}
-                  >
-                    {isSaving ? (
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : isSaved ? (
-                      <>
-                        <Check size={14} /> Saved
-                      </>
-                    ) : (
-                      <>
-                        <Heart size={14} /> Save Set
-                      </>
-                    )}
-                  </button>
-                </div>
-              </motion.div>
-            );
-          })}
-        </motion.div>
-      ) : (
-        <div className="p-8 text-center bg-white/70 backdrop-blur-xl rounded-2xl border border-[#E7E5E4]">
-          <h4 className="font-serif font-bold text-sm text-[#1C1917]">No sets found matching this condition and temperature</h4>
-          <p className="text-xs text-[#78716C] mt-1 mb-4">
-            Try adjusting the temperature slider or uploading items like sweaters, pants, and jackets.
-          </p>
-          <button
-            onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature)}
-            className="px-4 py-2 bg-[#B8860B] text-white text-xs font-bold rounded-xl cursor-pointer"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Option 2 */}
+          <div
+            onClick={() => recommendations.length > 1 && setSelectedIndex(1)}
+            className="border border-[#E5E5E5] rounded-xl p-3 bg-white flex items-center justify-between cursor-pointer hover:border-[#A86E18] transition-colors"
           >
-            Retry Packets
-          </button>
+            <div>
+              <span className="text-[10px] text-[#737373] font-medium block mb-1.5">
+                Option 2
+              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1542272604-780c96856592?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1549298916-b41d501d3772?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1524805444758-089113d48a6d?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-[#A8A29E]" />
+          </div>
+
+          {/* Option 3 */}
+          <div
+            onClick={() => recommendations.length > 2 && setSelectedIndex(2)}
+            className="border border-[#E5E5E5] rounded-xl p-3 bg-white flex items-center justify-between cursor-pointer hover:border-[#A86E18] transition-colors"
+          >
+            <div>
+              <span className="text-[10px] text-[#737373] font-medium block mb-1.5">
+                Option 3
+              </span>
+              <div className="flex items-center gap-2">
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1506629082955-511b1aa562c8?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1533867617858-e7b97e060509?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+                <div className="w-12 h-12 rounded-lg bg-[#F6F6F5] p-1 flex items-center justify-center overflow-hidden border border-[#EEEEEE]/80">
+                  <img src="https://images.unsplash.com/photo-1511499767150-a48a237f0083?w=200" alt="" className="max-h-full max-w-full object-contain" />
+                </div>
+              </div>
+            </div>
+            <ChevronRight size={18} className="text-[#A8A29E]" />
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

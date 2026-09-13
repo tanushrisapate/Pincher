@@ -9,41 +9,34 @@ import {
   LayoutDashboard,
   Shirt,
   Wand2,
-  Upload,
   Sparkles,
-  History,
+  Upload,
   Heart,
-  Star,
-  TrendingUp,
-  BarChart3,
-  Settings,
+  Palette,
+  BarChart2,
   Menu,
+  Star,
   X,
-  User,
-  LogOut,
-  Sun,
-  ShieldCheck,
-  ChevronRight,
-  Plus
+  Plus,
+  ChevronDown,
+  LogOut
 } from "lucide-react";
 
 const NAV_LINKS = [
   { href: "/dashboard", label: "Overview", icon: LayoutDashboard },
-  { href: "/dashboard/wardrobe", label: "Wardrobe Catalog", icon: Shirt },
-  { href: "/dashboard/recommendations", label: "AI Recommendations", icon: Star, badge: "AI" },
-  { href: "/dashboard/outfit-builder", label: "Outfit Studio", icon: Wand2 },
-  { href: "/dashboard/upload", label: "Digitize Garment", icon: Upload },
-  { href: "/dashboard/saved", label: "Saved Lookbook", icon: Heart },
-  { href: "/dashboard/history", label: "Outfit History", icon: History },
-  { href: "/dashboard/insights", label: "Color Theory", icon: TrendingUp },
-  { href: "/dashboard/analytics", label: "Wardrobe Stats", icon: BarChart3 },
+  { href: "/dashboard/wardrobe", label: "Wardrobe", icon: Shirt },
+  { href: "/dashboard/recommendations", label: "AI Stylist", icon: Sparkles, isStylist: true },
+  { href: "/dashboard/outfit-builder", label: "Studio", icon: Wand2 },
+  { href: "/dashboard/upload", label: "Digitize", icon: Upload },
+  { href: "/dashboard/saved", label: "Lookbooks", icon: Heart, isLookbooks: true },
+  { href: "/dashboard/insights", label: "Color Theory", icon: Palette },
+  { href: "/dashboard/analytics", label: "Stats", icon: BarChart2, isStats: true },
 ];
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [weatherSnippet, setWeatherSnippet] = useState(null);
   const { user, isLoading, logout } = useAuth();
 
   // Redirect to login if user is not authenticated
@@ -53,25 +46,6 @@ export default function DashboardLayout({ children }) {
     }
   }, [user, isLoading, router, pathname]);
 
-  // Fetch quick weather snippet for top bar
-  useEffect(() => {
-    async function loadWeatherSnippet() {
-      try {
-        const res = await fetch("/api/weather/current?lat=28.6139&lon=77.2090&city=Current+Location");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data) {
-            setWeatherSnippet(data.data);
-          }
-        }
-      } catch (e) {
-        // Fallback default
-        setWeatherSnippet({ temperature: 22, condition: "Pleasant", icon: "☀️" });
-      }
-    }
-    loadWeatherSnippet();
-  }, []);
-
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
@@ -79,17 +53,10 @@ export default function DashboardLayout({ children }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#FAFAF9] flex flex-col items-center justify-center">
-        <motion.div
-          animate={{ scale: [1, 1.1, 1], rotate: [0, 180, 360] }}
-          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-[#B8860B] via-[#D4AF37] to-[#F59E0B] flex items-center justify-center text-white font-serif font-bold text-2xl shadow-xl shadow-[#B8860B]/25"
-        >
+      <div className="min-h-screen bg-[#F9F9F8] flex flex-col items-center justify-center">
+        <div className="w-12 h-12 rounded-lg bg-[#A86E18] flex items-center justify-center text-white font-serif font-bold text-xl shadow-md animate-pulse">
           P
-        </motion.div>
-        <p className="mt-5 text-sm font-semibold text-[#8C6212] tracking-widest uppercase animate-pulse">
-          Pincher Wardrobe Intelligence
-        </p>
+        </div>
       </div>
     );
   }
@@ -98,178 +65,124 @@ export default function DashboardLayout({ children }) {
     return null;
   }
 
-  const displayName = user?.name || "Member";
-  const userPersona = user?.persona ? user.persona.charAt(0).toUpperCase() + user.persona.slice(1) : "Classic";
+  const displayName = user?.name || "Tani";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
     .join("")
-    .slice(0, 2)
-    .toUpperCase() || "P";
-
-  // Current Page Title
-  const activeLink = NAV_LINKS.find((l) => l.href === pathname);
-  const pageTitle = activeLink ? activeLink.label : "Dashboard";
+    .slice(0, 1)
+    .toUpperCase() || "T";
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] text-[#1C1917] font-sans selection:bg-[#D4AF37]/30 flex flex-col">
-      {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col fixed inset-y-0 left-0 w-[275px] bg-white/85 backdrop-blur-2xl border-r border-[#E7E5E4] z-50 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
-        {/* Brand Header */}
-        <div className="p-6 pb-4 flex items-center justify-between border-b border-[#F5F5F4]">
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#B8860B] via-[#D4AF37] to-[#F59E0B] flex items-center justify-center text-white font-serif font-bold shadow-md shadow-[#B8860B]/20 transition-transform group-hover:scale-105">
-              P
-            </div>
-            <div>
-              <span className="text-xl font-bold tracking-tight text-[#1C1917] block leading-none">
-                Pincher<span className="text-[#B8860B]">.</span>
-              </span>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-[#A8A29E]">
-                Haute Intelligence
-              </span>
-            </div>
-          </Link>
-        </div>
-
-        {/* Navigation Items */}
-        <nav className="flex-1 px-3.5 py-4 space-y-1 overflow-y-auto custom-scrollbar">
-          <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-[#A8A29E]">
-            Menu
-          </div>
-          {NAV_LINKS.map((link) => {
-            const isActive = pathname === link.href;
-            const Icon = link.icon;
-
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`group flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-200 text-sm ${
-                  isActive
-                    ? "bg-[#FAF8F5] text-[#8C6212] font-bold border border-[#D4AF37]/30 shadow-xs shadow-[#B8860B]/5"
-                    : "text-[#57534E] hover:bg-stone-50 hover:text-[#1C1917] font-medium"
-                }`}
+    <div className="min-h-screen bg-[#F9F9F8] text-[#111111] font-sans flex flex-col">
+      {/* ================= UPPER SIDE / TOP NAVIGATION ================= */}
+      <header className="sticky top-0 z-50 bg-white border-b border-[#EEEEEE]">
+        {/* Main Upper Bar */}
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex items-center justify-between h-16 gap-4">
+            
+            {/* 1. Brand Logo */}
+            <div className="flex items-center gap-3 shrink-0">
+              <button
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden p-1.5 -ml-1.5 text-[#525252] hover:bg-stone-100 rounded-lg transition-colors"
+                aria-label="Open Navigation Menu"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
+                <Menu size={20} />
+              </button>
+
+              <Link href="/dashboard" className="flex items-center gap-2.5 group">
+                <div className="w-7 h-7 rounded-md bg-[#A86E18] flex items-center justify-center text-white font-serif font-bold text-sm shadow-2xs">
+                  P
+                </div>
+                <span className="text-base font-bold text-[#111111] tracking-tight">
+                  Pincher.
+                </span>
+              </Link>
+            </div>
+
+            {/* 2. Upper Horizontal Navigation Links (Desktop) */}
+            <nav className="hidden lg:flex items-center gap-2">
+              {NAV_LINKS.map((link) => {
+                const isActive = pathname === link.href;
+
+                return (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs transition-colors ${
                       isActive
-                        ? "bg-[#B8860B] text-white shadow-xs"
-                        : "bg-stone-100 text-[#78716C] group-hover:bg-[#B8860B]/10 group-hover:text-[#B8860B]"
+                        ? "bg-[#FDFBF7] text-[#A86E18] border border-[#E8DCC0] font-semibold"
+                        : "text-[#262626] hover:text-[#A86E18] font-normal"
                     }`}
                   >
-                    <Icon size={16} />
-                  </div>
-                  <span>{link.label}</span>
-                </div>
-                {link.badge && (
-                  <span className="text-[10px] font-bold bg-[#B8860B]/15 text-[#8C6212] px-2 py-0.5 rounded-full">
-                    {link.badge}
-                  </span>
-                )}
-              </Link>
-            );
-          })}
-        </nav>
+                    {link.isStylist && (
+                      <Sparkles
+                        size={12}
+                        className={isActive ? "text-[#A86E18]" : "text-[#737373]"}
+                      />
+                    )}
+                    {link.isLookbooks && (
+                      <Heart
+                        size={11}
+                        className={isActive ? "text-[#A86E18]" : "text-[#737373]"}
+                      />
+                    )}
+                    {link.isStats && (
+                      <BarChart2
+                        size={11}
+                        className={isActive ? "text-[#A86E18]" : "text-[#737373]"}
+                      />
+                    )}
+                    <span>{link.label}</span>
+                  </Link>
+                );
+              })}
+            </nav>
 
-        {/* User Card & Logout */}
-        <div className="p-3.5 border-t border-[#E7E5E4] bg-[#FAF9F6]/50">
-          <div className="flex items-center justify-between p-2 rounded-xl border border-[#E7E5E4]/80 bg-white/80 shadow-2xs">
-            <Link href="/dashboard/profile" className="flex items-center gap-3 flex-1 min-w-0 group">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#B8860B] to-[#D4AF37] flex items-center justify-center text-white font-bold text-xs shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-                {initials}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-[#1C1917] truncate group-hover:text-[#B8860B] transition-colors">
-                  {displayName}
-                </p>
-                <span className="text-[10px] font-medium text-[#8C6212] bg-[#B8860B]/10 px-1.5 py-0.2 rounded inline-block">
-                  {userPersona} Style
-                </span>
-              </div>
-            </Link>
-            <div className="flex items-center gap-0.5">
-              <button
-                onClick={logout}
-                title="Sign Out"
-                className="p-1.5 text-[#A8A29E] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+            {/* 3. Upper Right Actions */}
+            <div className="flex items-center gap-3 shrink-0">
+              <Link
+                href="/dashboard/upload"
+                className="bg-[#A86E18] hover:bg-[#925f14] text-white text-xs font-semibold px-3.5 py-1.5 rounded-lg flex items-center gap-1 transition-colors shadow-2xs"
               >
-                <LogOut size={16} />
-              </button>
+                <Plus size={14} />
+                <span>Add Garment</span>
+              </Link>
+
+              <Link
+                href="/dashboard/profile"
+                className="flex items-center gap-2 text-xs font-semibold text-[#111111] hover:text-[#A86E18] transition-colors"
+                title={displayName}
+              >
+                <div className="w-8 h-8 rounded-full bg-[#111111] text-white flex items-center justify-center font-semibold text-xs tracking-tight shadow-2xs">
+                  {initials}
+                </div>
+                <span className="hidden sm:inline-block font-medium">{displayName}</span>
+                <ChevronDown size={14} className="text-[#737373]" />
+              </Link>
             </div>
+
           </div>
         </div>
-      </aside>
+      </header>
 
-      {/* Main Content Area */}
-      <div className="lg:pl-[275px] flex flex-col flex-1 min-h-screen">
-        {/* Top Header Bar */}
-        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-[#E7E5E4] px-4 lg:px-8 py-3.5 flex items-center justify-between shadow-2xs">
-          {/* Breadcrumb / Title */}
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-[#57534E] hover:bg-stone-100 rounded-lg transition-colors"
-            >
-              <Menu size={22} />
-            </button>
-            <div className="hidden sm:flex items-center gap-2 text-xs text-[#78716C]">
-              <span>Pincher</span>
-              <ChevronRight size={14} />
-              <span className="font-semibold text-[#1C1917]">{pageTitle}</span>
-            </div>
-            <h1 className="sm:hidden text-lg font-bold text-[#1C1917]">{pageTitle}</h1>
-          </div>
+      {/* ================= MAIN CONTENT AREA ================= */}
+      <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 pb-20 lg:pb-12">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={pathname}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.16 }}
+          >
+            {children}
+          </motion.div>
+        </AnimatePresence>
+      </main>
 
-          {/* Right Utilities (Weather Widget + Quick Add + Profile) */}
-          <div className="flex items-center gap-3">
-            {/* Live Weather Pill */}
-            {weatherSnippet && (
-              <div className="hidden md:flex items-center gap-2 text-xs font-semibold bg-stone-50 border border-[#E7E5E4] text-[#1C1917] px-3 py-1.5 rounded-full shadow-2xs">
-                <span>{weatherSnippet.icon || "☀️"}</span>
-                <span>{Math.round(weatherSnippet.temperature || 22)}°C</span>
-                <span className="text-[#A8A29E]">•</span>
-                <span className="text-[#57534E]">{weatherSnippet.condition || "Pleasant"}</span>
-              </div>
-            )}
-
-            {/* Quick Upload Button */}
-            <Link
-              href="/dashboard/upload"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#B8860B] hover:bg-[#8C6212] text-white text-xs font-bold rounded-full transition-all shadow-xs shadow-[#B8860B]/20"
-            >
-              <Plus size={14} />
-              <span>Add Garment</span>
-            </Link>
-
-            {/* User Profile Avatar Link */}
-            <Link
-              href="/dashboard/profile"
-              className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#B8860B] to-[#D4AF37] flex items-center justify-center text-white font-bold text-xs shadow-xs hover:ring-2 hover:ring-[#B8860B]/30 transition-all"
-            >
-              {initials}
-            </Link>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 p-4 md:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-24 lg:pb-10">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.18 }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
-        </main>
-      </div>
-
-      {/* Mobile Menu Overlay */}
+      {/* ================= MOBILE MENU OVERLAY ================= */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <>
@@ -278,23 +191,25 @@ export default function DashboardLayout({ children }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="lg:hidden fixed inset-0 bg-[#1C1917]/30 backdrop-blur-xs z-50"
+              className="lg:hidden fixed inset-0 bg-[#1C1917]/40 backdrop-blur-xs z-50"
             />
             <motion.div
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
-              transition={{ type: "spring", damping: 25, stiffness: 220 }}
-              className="lg:hidden fixed inset-y-0 left-0 w-[280px] bg-white border-r border-[#E7E5E4] z-50 flex flex-col shadow-2xl"
+              transition={{ type: "spring", damping: 25, stiffness: 240 }}
+              className="lg:hidden fixed inset-y-0 left-0 w-[290px] bg-white border-r border-[#E7E5E4] z-50 flex flex-col shadow-2xl"
             >
               <div className="p-4 flex items-center justify-between border-b border-[#E7E5E4]">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#B8860B] to-[#D4AF37] flex items-center justify-center text-white font-bold font-serif shadow-xs">
                     P
                   </div>
-                  <span className="text-lg font-bold tracking-tight text-[#1C1917]">
-                    Pincher<span className="text-[#B8860B]">.</span>
-                  </span>
+                  <div>
+                    <span className="text-lg font-bold tracking-tight text-[#1C1917]">
+                      Pincher<span className="text-[#B8860B]">.</span>
+                    </span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
@@ -304,7 +219,22 @@ export default function DashboardLayout({ children }) {
                 </button>
               </div>
 
+              <div className="p-3 border-b border-[#E7E5E4] bg-[#FAF9F6]">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-stone-800 flex items-center justify-center text-white font-semibold text-xs shadow-xs">
+                    {initials}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#1C1917]">{displayName}</p>
+                    <p className="text-[10px] text-[#78716C]">Wardrobe Member</p>
+                  </div>
+                </div>
+              </div>
+
               <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-[#A8A29E]">
+                  Upper Navigation Menu
+                </div>
                 {NAV_LINKS.map((link) => {
                   const isActive = pathname === link.href;
                   const Icon = link.icon;
@@ -334,15 +264,12 @@ export default function DashboardLayout({ children }) {
               </nav>
 
               <div className="p-4 border-t border-[#E7E5E4] flex items-center justify-between bg-stone-50">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#B8860B] to-[#D4AF37] flex items-center justify-center text-white font-bold text-xs">
-                    {initials}
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-[#1C1917]">{displayName}</p>
-                    <p className="text-[10px] text-[#8C6212]">{userPersona} Style</p>
-                  </div>
-                </div>
+                <Link
+                  href="/dashboard/upload"
+                  className="flex-1 mr-2 text-center py-2 bg-[#B8860B] text-white text-xs font-bold rounded-xl shadow-xs"
+                >
+                  + Add Garment
+                </Link>
                 <button
                   onClick={logout}
                   title="Sign Out"
@@ -356,8 +283,8 @@ export default function DashboardLayout({ children }) {
         )}
       </AnimatePresence>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-[#E7E5E4] z-40 shadow-lg">
+      {/* ================= MOBILE BOTTOM NAVIGATION BAR ================= */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-[#E7E5E4] z-40 shadow-lg">
         <div className="flex items-center justify-around px-2 h-16">
           <Link href="/dashboard" className="flex flex-col items-center justify-center w-12 h-full text-[#A8A29E]">
             <LayoutDashboard size={20} className={pathname === "/dashboard" ? "text-[#B8860B]" : ""} />

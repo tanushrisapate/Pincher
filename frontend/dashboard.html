@@ -3,171 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pincher Dashboard</title>
+    <title>Pincher Dashboard — Haute Wardrobe Intelligence</title>
 
     <link rel="stylesheet" href="./css/pages/dashboard.css">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="dashboard">
-
-    <aside class="sidebar">
-
-       <div class="nav-logo">
-            <img src="./assets/icons/pincher.png" alt="logo" class="logo">
+<!-- ================= UPPER SIDE / TOP NAVIGATION ================= -->
+<header class="top-navbar">
+    <div class="nav-container">
+        <!-- Brand Logo -->
+        <div class="nav-brand">
+            <div class="brand-badge">P</div>
+            <div class="brand-text">
+                <span class="brand-title">Pincher<span class="dot">.</span></span>
+                <span class="brand-subtitle">Haute Intelligence</span>
+            </div>
         </div>
 
-
-        <nav class="menu">
-            <a href="#" class="active">Overview</a>
-            <a href="#">Upload</a>
-            <a href="#"> History</a>
-            <a href="#">Favorites</a>
+        <!-- Upper Navigation Menu -->
+        <nav class="upper-menu">
+            <a href="dashboard.html" class="active">Overview</a>
+            <a href="#">Wardrobe</a>
+            <a href="result.html">Predictions</a>
+            <a href="#">Lookbooks</a>
+            <a href="#">History</a>
             <a href="#">Settings</a>
         </nav>
 
-        <div class="logout">
-            <a href="#">Logout</a>
-        </div>
+        <!-- Right Actions & Profile -->
+        <div class="nav-actions">
+            <a href="upload.html" class="btn-upload">+ Add Garment</a>
 
-    </aside>
-
-    <main class="main">
-
-        <div class="topbar">
-
-            <div>
-                <h1>Welcome, Sarah!</h1>
-                <p>Here's your fashion overview</p>
+            <div class="notification-bell" title="Notifications">
+                🔔
+                <span class="bell-dot"></span>
             </div>
 
-            <div class="profile">
-
-                <div class="notification">
-                    🔔
-                </div>
-
+            <div class="user-capsule">
                 <div class="avatar">
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="Sarah">
                 </div>
-
+                <div class="user-info">
+                    <span class="user-name">Sarah Jenkins</span>
+                    <span class="user-role">Classic Persona</span>
+                </div>
+                <a href="login.html" class="logout-link" title="Logout">↪</a>
             </div>
+        </div>
+    </div>
+</header>
 
+<!-- ================= MAIN DASHBOARD WORKSPACE (EXPANSIVE SPACE) ================= -->
+<div class="dashboard-wrapper">
+    <main class="main-workspace">
+        
+        <!-- Welcome Hero Banner -->
+        <div class="hero-banner">
+            <div class="hero-left">
+                <span class="hero-tag">✨ DAILY FASHION TELEMETRY</span>
+                <h1>Welcome, Sarah!</h1>
+                <p>Here's your weather-attuned wardrobe intelligence & outfit harmony overview.</p>
+            </div>
+            <div class="weather-widget">
+                <div class="weather-icon">☀️</div>
+                <div class="weather-details">
+                    <div class="weather-temp">24°C</div>
+                    <div class="weather-desc">Clear & Pleasant • Delhi</div>
+                </div>
+            </div>
         </div>
 
+        <!-- Stats Grid -->
         <section class="stats">
-
             <div class="stat-card">
                 <div class="icon">📂</div>
                 <span>Predictions</span>
                 <h2>24</h2>
-                <p>This Month</p>
+                <p>This Month (+12%)</p>
             </div>
 
             <div class="stat-card">
                 <div class="icon">💗</div>
-                <span>Matches</span>
+                <span>Harmony Match</span>
                 <h2>92%</h2>
-                <p>Avg Accuracy</p>
+                <p>Avg CIELAB Accuracy</p>
             </div>
 
             <div class="stat-card">
                 <div class="icon">👜</div>
-                <span>Outfits</span>
+                <span>Cataloged Outfits</span>
                 <h2>18</h2>
-                <p>Saved</p>
+                <p>100% Wardrobe Pieces</p>
             </div>
 
             <div class="stat-card">
                 <div class="icon">🤍</div>
-                <span>Favorites</span>
+                <span>Saved Lookbooks</span>
                 <h2>7</h2>
-                <p>Outfits</p>
+                <p>Curated Collections</p>
             </div>
-
         </section>
 
-        <div class="section-header">
+        <!-- Main Workspace Grid: Recent Predictions + Top Recommendation -->
+        <div class="content-showcase-grid">
+            
+            <!-- Left: Spacious Predictions Showcase ("Enlighten Space") -->
+            <div class="showcase-left">
+                <div class="section-header">
+                    <div>
+                        <h2>Recent Predictions & Outfits</h2>
+                        <p class="section-sub">Smart garment classification & CIELAB dominant color extractions</p>
+                    </div>
+                    <div class="section-actions">
+                        <button class="filter-pill active">All</button>
+                        <button class="filter-pill">Tops</button>
+                        <button class="filter-pill">Bottoms</button>
+                        <button class="filter-pill">Shoes</button>
+                        <a href="result.html" class="btn-view-all">View All →</a>
+                    </div>
+                </div>
 
-            <h2>Recent Predictions</h2>
+                <section class="prediction-grid">
+                    <div class="prediction-card">
+                        <div class="card-img-wrap">
+                            <span class="match-badge">96% Match</span>
+                            <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600" alt="Casual Look">
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Beige Trench & Knit</div>
+                            <div class="prediction-meta">
+                                <span>Outerwear</span> • <span>2 May 2026</span>
+                            </div>
+                        </div>
+                    </div>
 
-            <button>View All</button>
+                    <div class="prediction-card">
+                        <div class="card-img-wrap">
+                            <span class="match-badge">92% Match</span>
+                            <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600" alt="Streetwear Aesthetic">
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Urban Structured Blazer</div>
+                            <div class="prediction-meta">
+                                <span>Tops</span> • <span>30 Apr 2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="card-img-wrap">
+                            <span class="match-badge">89% Match</span>
+                            <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600" alt="Minimalist Fit">
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Monochrome Pastel Set</div>
+                            <div class="prediction-meta">
+                                <span>Dresses</span> • <span>28 Apr 2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-card">
+                        <div class="card-img-wrap">
+                            <span class="match-badge">94% Match</span>
+                            <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="Summer Casual">
+                        </div>
+                        <div class="prediction-content">
+                            <div class="prediction-title">Linen Summer Silhouette</div>
+                            <div class="prediction-meta">
+                                <span>Dresses</span> • <span>25 Apr 2026</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right: Curated Recommendation Spotlight -->
+            <aside class="showcase-right">
+                <div class="recommendation-card">
+                    <div class="rec-badge">TODAY'S TOP RECOMMENDATION</div>
+                    <h2>Casual Chic Ensemble</h2>
+                    <p>
+                        Attuned to today's 24°C pleasant weather. Pairs your structured linen with neutral accent footwear.
+                    </p>
+                    <div class="rec-metrics">
+                        <span class="pill-score">96% Harmony</span>
+                        <span class="pill-climate">Breathable</span>
+                    </div>
+                    <div class="rec-img-wrap">
+                        <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="Outfit Recommendation">
+                    </div>
+                    <a href="result.html" class="rec-button">View Detailed Breakdown →</a>
+                </div>
+            </aside>
 
         </div>
-
-        <section class="prediction-grid">
-
-            <div class="prediction-card">
-
-                <img src="https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600" alt="">
-
-                <div class="prediction-content">
-                    <h4>96% Match</h4>
-                    <p>2 May 2024</p>
-                </div>
-
-            </div>
-
-            <div class="prediction-card">
-
-                <img src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600" alt="">
-
-                <div class="prediction-content">
-                    <h4>92% Match</h4>
-                    <p>30 Apr 2026</p>
-                </div>
-
-            </div>
-
-            <div class="prediction-card">
-
-                <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600" alt="">
-
-                <div class="prediction-content">
-                    <h4>89% Match</h4>
-                    <p>28 Apr 2024</p>
-                </div>
-
-            </div>
-
-            <div class="prediction-card">
-
-                <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="">
-
-                <div class="prediction-content">
-                    <h4>94% Match</h4>
-                    <p>25 Apr 2024</p>
-                </div>
-
-            </div>
-
-        </section>
 
     </main>
-
-    <aside class="recommendation">
-
-        <div class="recommendation-card">
-
-            <h5>Top Style Recommendation</h5>
-
-            <h2>Casual Chic</h2>
-
-            <p>
-                Based on your recent preferences and prediction history.
-            </p>
-
-            <button>View More</button>
-
-            <img src="https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=600" alt="">
-
-        </div>
-
-    </aside>
-
 </div>
 
 </body>

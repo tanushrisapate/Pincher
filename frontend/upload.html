@@ -3,125 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pincher Upload</title>
+    <title>Pincher — Digitize & Upload Garment</title>
 
+    <link rel="stylesheet" href="./css/pages/dashboard.css">
     <link rel="stylesheet" href="./css/pages/upload.css">
-
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-<div class="dashboard">
-
-    <aside class="sidebar">
-
-        <div class="logo">
-            <img src="./assets/icons/pincher.png" alt="">
+<!-- ================= UPPER SIDE / TOP NAVIGATION ================= -->
+<header class="top-navbar">
+    <div class="nav-container">
+        <!-- Brand Logo -->
+        <div class="nav-brand">
+            <div class="brand-badge">P</div>
+            <div class="brand-text">
+                <span class="brand-title">Pincher<span class="dot">.</span></span>
+                <span class="brand-subtitle">Haute Intelligence</span>
+            </div>
         </div>
 
-        <nav class="menu">
-
-            <a href="dashboard.html">
-                Overview
-            </a>
-
-            <a href="upload.html">
-                Upload
-            </a>
-
-            <a href="#" class="active">
-                 History
-            </a>
-
-            <a href="#">
-                Favorites
-            </a>
-
-            <a href="#">
-                Settings
-            </a>
-
+        <!-- Upper Navigation Menu -->
+        <nav class="upper-menu">
+            <a href="dashboard.html">Overview</a>
+            <a href="#">Wardrobe</a>
+            <a href="result.html">Predictions</a>
+            <a href="#">Lookbooks</a>
+            <a href="#">History</a>
+            <a href="#">Settings</a>
         </nav>
 
-        <a href="#" class="logout">
-             Logout
-        </a>
+        <!-- Right Actions & Profile -->
+        <div class="nav-actions">
+            <a href="upload.html" class="btn-upload">+ Add Garment</a>
 
-    </aside>
-
-    <main class="content">
-
-        <div class="topbar">
-
-            <div></div>
-
-            <div class="profile">
-
-                <span class="bell">🔔</span>
-
-                <img src="https://i.pravatar.cc/100" alt="">
-
+            <div class="notification-bell" title="Notifications">
+                🔔
+                <span class="bell-dot"></span>
             </div>
 
+            <div class="user-capsule">
+                <div class="avatar">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=500" alt="Sarah">
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Sarah Jenkins</span>
+                    <span class="user-role">Classic Persona</span>
+                </div>
+                <a href="login.html" class="logout-link" title="Logout">↪</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="dashboard-wrapper">
+    <main class="upload-container">
+
+        <div class="upload-header">
+            <span class="badge-tag">DEEPFASHION2 AI VISION</span>
+            <h1>Upload & Digitize Garment</h1>
+            <p class="subtitle">Upload a clear photo of your garment to auto-extract CIELAB colors and category classification</p>
         </div>
 
-        <h1>Upload Your Outfit</h1>
-
-        <p class="subtitle">
-            Upload a clear image of your outfit
-        </p>
-
         <div class="upload-box">
-
             <div class="upload-content">
-
-                <div class="upload-icon">
-                    ☁
-                </div>
-
-                <h3>Drag & drop your image here</h3>
-
+                <div class="upload-icon">☁️</div>
+                <h3>Drag & drop your garment photo here</h3>
                 <span>or</span>
-
                 <label class="upload-btn">
-                    Choose Image
-                    <input type="file" hidden>
+                    Choose Image File
+                    <input type="file" hidden accept="image/*">
                 </label>
-
-                <p>JPG, PNG up to 5MB</p>
-
+                <p>Supports JPG, PNG, WEBP up to 10MB</p>
             </div>
-
         </div>
 
         <div class="tips-card">
-
-            <h4>Tips for better results</h4>
-
+            <h4>Precision Ingestion Guidelines</h4>
             <div class="tips">
-
                 <div class="tip">
-                    💡
-                    <span>Good lighting</span>
+                    <span class="tip-icon">💡</span>
+                    <div>
+                        <strong>Balanced Lighting</strong>
+                        <p>Neutral daylight preserves true garment color temperature</p>
+                    </div>
                 </div>
-
                 <div class="tip">
-                    👕
-                    <span>Full outfit visible</span>
+                    <span class="tip-icon">👕</span>
+                    <div>
+                        <strong>Full Piece Visible</strong>
+                        <p>Lay garment flat or hang against plain background</p>
+                    </div>
                 </div>
-
                 <div class="tip">
-                    👤
-                    <span>No cluttered background</span>
+                    <span class="tip-icon">👤</span>
+                    <div>
+                        <strong>Studio Masking</strong>
+                        <p>Automated isolation eliminates background noise</p>
+                    </div>
                 </div>
-
             </div>
-
         </div>
 
     </main>
-
 </div>
 
 </body>
