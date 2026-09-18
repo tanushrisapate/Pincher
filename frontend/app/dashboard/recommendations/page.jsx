@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import { useWeather } from "@/app/context/WeatherContext";
 import {
   Sparkles,
   Bookmark,
@@ -47,12 +48,13 @@ const WEATHER_PRESETS = [
 
 export default function RecommendationsPage() {
   const { user } = useAuth();
+  const { weather, status: liveWeatherStatus, message: liveWeatherMessage, refresh: refreshWeather } = useWeather();
   const [selectedDay, setSelectedDay] = useState(
     new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase()
   );
   const [occasion, setOccasion] = useState("casual");
-  const [temperature, setTemperature] = useState(22.0);
-  const [weatherCondition, setWeatherCondition] = useState("Clear");
+  const [temperature, setTemperature] = useState(null);
+  const [weatherCondition, setWeatherCondition] = useState(null);
   const [recommendations, setRecommendations] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,8 +64,12 @@ export default function RecommendationsPage() {
   const [wardrobeItemsCache, setWardrobeItemsCache] = useState([]);
   const [showAdvancedWeather, setShowAdvancedWeather] = useState(false);
   const [userPrefs, setUserPrefs] = useState(null);
+  const [contextReady, setContextReady] = useState(false);
+  const [manualWeatherSelected, setManualWeatherSelected] = useState(false);
+  const lastAutoWeatherKey = useRef(null);
 
-  // Load weather, profile preferences, and check wardrobe item count on mount
+  // Load profile preferences and wardrobe. Live weather comes from the shared
+  // dashboard provider so this flow does not request location or weather twice.
   useEffect(() => {
     async function initContext() {
       try {
@@ -87,39 +93,24 @@ export default function RecommendationsPage() {
           setUserPrefs(loadedPrefs);
         }
 
-        const weatherRes = await fetch("http://localhost:8000/api/weather/current?lat=28.6139&lon=77.2090&city=Delhi").catch(() => null);
-        let currentTemp = 22.0;
-        let currentCond = "Clear";
-        if (weatherRes && weatherRes.ok) {
-          const w = await weatherRes.json();
-          if (w.data) {
-            currentTemp = w.data.temperature;
-            currentCond = w.data.condition || "Clear";
-            setTemperature(currentTemp);
-            setWeatherCondition(currentCond);
-          }
-        }
-
         const wardrobeRes = await fetch("/api/wardrobe").catch(() => null);
         if (wardrobeRes && wardrobeRes.ok) {
           const wData = await wardrobeRes.json();
           const items = wData.items || [];
           setWardrobeCount(items.length);
           setWardrobeItemsCache(items);
-          if (items.length > 0) {
-            const todayDay = new Date().toLocaleDateString("en-US", { weekday: "long" }).toLowerCase();
-            fetchRecommendations("casual", items, currentTemp, todayDay, currentCond, loadedPrefs);
-          }
         }
       } catch (err) {
         console.warn("Init recommendations error:", err);
+      } finally {
+        setContextReady(true);
       }
     }
 
     initContext();
   }, []);
 
-  const fetchRecommendations = async (
+  const fetchRecommendations = useCallback(async (
     selectedOccasion = occasion,
     cachedItems = wardrobeItemsCache,
     targetTemp = temperature,
@@ -127,13 +118,14 @@ export default function RecommendationsPage() {
     cond = weatherCondition,
     prefs = userPrefs
   ) => {
+    if (targetTemp === null || targetTemp === undefined || !Number.isFinite(Number(targetTemp)) || !cond) return;
     setIsLoading(true);
     setSelectedIndex(0);
     try {
       const preferredColor = prefs?.favoriteColors?.[0] || null;
       const avoidColor = prefs?.avoidColors?.[0] || null;
 
-      const res = await fetch("http://localhost:8000/api/outfits/recommend", {
+      const res = await fetch("/api/outfits/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -225,13 +217,51 @@ export default function RecommendationsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [occasion, wardrobeItemsCache, temperature, selectedDay, weatherCondition, userPrefs, user?.persona]);
+
+  // Seed the stylist with observed conditions once both the profile/wardrobe
+  // context and the shared browser-location weather request are ready.
+  useEffect(() => {
+    if (manualWeatherSelected) return;
+    if (liveWeatherStatus !== "ready" || !weather) {
+      if (liveWeatherStatus !== "loading-weather") {
+        setTemperature(null);
+        setWeatherCondition(null);
+      }
+      return;
+    }
+    if (!contextReady) return;
+
+    setTemperature(weather.temperature);
+    setWeatherCondition(weather.condition);
+    const weatherKey = `${weather.observed_at || ""}:${weather.temperature}:${weather.condition}`;
+    if (lastAutoWeatherKey.current !== weatherKey && wardrobeItemsCache.length > 0) {
+      lastAutoWeatherKey.current = weatherKey;
+      fetchRecommendations(
+        "casual",
+        wardrobeItemsCache,
+        weather.temperature,
+        selectedDay,
+        weather.condition,
+        userPrefs
+      );
+    }
+  }, [
+    contextReady,
+    liveWeatherStatus,
+    weather,
+    manualWeatherSelected,
+    wardrobeItemsCache,
+    selectedDay,
+    userPrefs,
+    fetchRecommendations,
+  ]);
 
   const handleSaveOutfit = async (outfit) => {
     if (!outfit) return;
     setSaveLoadingId(outfit.id);
     try {
-      await fetch("http://localhost:8000/api/outfits/save", {
+      await fetch("/api/outfits/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -346,13 +376,41 @@ export default function RecommendationsPage() {
 
           {/* Weather Status Row */}
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-base">☀️</span>
-            <span className="text-xs font-bold text-[#111111]">
-              {Math.round(temperature)}°C
-            </span>
-            <span className="text-xs text-[#737373]">
-              {weatherCondition}
-            </span>
+            <span className="text-base" aria-hidden="true">{weather && !manualWeatherSelected ? weather.icon : "🌡️"}</span>
+            {temperature !== null && weatherCondition ? (
+              <>
+                <span className="text-xs font-bold text-[#111111]">
+                  {Math.round(temperature)}°C
+                </span>
+                <span className="text-xs text-[#737373]">
+                  {weatherCondition}{manualWeatherSelected ? " · Manual scenario" : ""}
+                </span>
+              </>
+            ) : (
+              <span className="text-xs text-[#737373]">
+                {liveWeatherStatus.startsWith("loading") ? liveWeatherMessage : "Weather unavailable · choose a preset or retry"}
+              </span>
+            )}
+            {weather && manualWeatherSelected && (
+              <button
+                type="button"
+                onClick={() => {
+                  setManualWeatherSelected(false);
+                  setTemperature(weather.temperature);
+                  setWeatherCondition(weather.condition);
+                  lastAutoWeatherKey.current = `${weather.observed_at || ""}:${weather.temperature}:${weather.condition}`;
+                  fetchRecommendations(occasion, wardrobeItemsCache, weather.temperature, selectedDay, weather.condition);
+                }}
+                className="ml-1 text-[11px] text-[#A86E18] hover:underline"
+              >
+                Use local weather
+              </button>
+            )}
+            {!weather && !liveWeatherStatus.startsWith("loading") && (
+              <button type="button" onClick={refreshWeather} className="ml-1 text-[11px] text-[#A86E18] hover:underline">
+                Retry
+              </button>
+            )}
             <button
               onClick={() => setShowAdvancedWeather(!showAdvancedWeather)}
               className="ml-3 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md border border-[#E5E5E5] text-[11px] text-[#525252] hover:bg-stone-50 transition-colors"
@@ -361,15 +419,29 @@ export default function RecommendationsPage() {
             </button>
           </div>
 
+          {weather && (
+            <p className="text-[10px] text-[#A8A29E] mb-3">
+              {weather.locality || weather.city || "Local area"}
+              {weather.region ? `, ${weather.region}` : ""}
+              {" · Weather by "}
+              <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline">Open-Meteo</a>
+              {" · Location "}
+              <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="underline">
+                {weather.location_attribution || "© OpenStreetMap contributors"}
+              </a>
+            </p>
+          )}
+
           {/* Weather Presets */}
           <div className="flex flex-wrap gap-2">
             {WEATHER_PRESETS.map((preset) => {
               const Icon = preset.icon;
-              const isActive = Math.round(temperature) === preset.temp;
+              const isActive = manualWeatherSelected && Math.round(temperature) === preset.temp;
               return (
                 <button
                   key={preset.label}
                   onClick={() => {
+                    setManualWeatherSelected(true);
                     setTemperature(preset.temp);
                     setWeatherCondition(preset.cond);
                     fetchRecommendations(occasion, wardrobeItemsCache, preset.temp, selectedDay, preset.cond);
@@ -396,15 +468,18 @@ export default function RecommendationsPage() {
                 type="range"
                 min="-5"
                 max="40"
-                value={temperature}
+                value={temperature ?? (weather ? weather.temperature : 20)}
                 onChange={(e) => {
                   const val = parseFloat(e.target.value);
+                  setManualWeatherSelected(true);
                   setTemperature(val);
-                  fetchRecommendations(occasion, wardrobeItemsCache, val, selectedDay, weatherCondition);
+                  const customCondition = weatherCondition || "Custom";
+                  setWeatherCondition(customCondition);
+                  fetchRecommendations(occasion, wardrobeItemsCache, val, selectedDay, customCondition);
                 }}
                 className="w-36 accent-[#A86E18]"
               />
-              <span className="text-xs font-bold text-stone-800">{Math.round(temperature)}°C</span>
+              <span className="text-xs font-bold text-stone-800">{temperature === null ? "—" : `${Math.round(temperature)}°C`}</span>
             </div>
           )}
         </div>
@@ -413,7 +488,7 @@ export default function RecommendationsPage() {
         <div className="pt-2 text-center">
           <button
             onClick={() => fetchRecommendations(occasion, wardrobeItemsCache, temperature, selectedDay, weatherCondition)}
-            disabled={isLoading || wardrobeCount === 0}
+            disabled={isLoading || wardrobeCount === 0 || temperature === null || !weatherCondition}
             className="w-full max-w-sm mx-auto bg-[#A86E18] hover:bg-[#925f14] text-white px-6 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors shadow-2xs disabled:opacity-50"
           >
             <Sparkles size={14} className={isLoading ? "animate-spin" : ""} />

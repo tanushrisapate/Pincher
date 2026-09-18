@@ -5,8 +5,28 @@ import jwt
 from fastapi import Request, HTTPException, status, Depends
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from app.core.config import settings
+from app.core.database import get_db_cursor
 
 security = HTTPBearer(auto_error=False)
+DEMO_USER_EMAIL = "tani@example.com"
+
+def _load_demo_user() -> Dict[str, Any]:
+    with get_db_cursor() as cur:
+        cur.execute("SELECT id, name, email, persona FROM users ORDER BY id ASC LIMIT 1")
+        demo_user = cur.fetchone()
+
+    if not demo_user:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="The demo user could not be initialized.",
+        )
+
+    return {
+        "userId": demo_user["id"],
+        "name": demo_user.get("name", "Tani"),
+        "email": demo_user.get("email", DEMO_USER_EMAIL),
+        "persona": demo_user.get("persona", "classic"),
+    }
 
 def hash_password(password: str) -> str:
     salt = bcrypt.gensalt(rounds=10)
@@ -51,18 +71,12 @@ async def get_current_user(
         token = request.cookies.get("pincher_token")
 
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Not authenticated. Please log in.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        # The prototype has one shared local user and intentionally does not
+        # require a login session. Reuse existing local data when available.
+        return _load_demo_user()
 
     payload = decode_access_token(token)
     if not payload or "userId" not in payload:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired token.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        return _load_demo_user()
 
     return payload

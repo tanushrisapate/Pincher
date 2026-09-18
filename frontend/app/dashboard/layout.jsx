@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "@/app/context/AuthContext";
+import { WeatherProvider } from "@/app/context/WeatherContext";
 import {
   LayoutDashboard,
   Shirt,
@@ -18,8 +18,7 @@ import {
   Star,
   X,
   Plus,
-  ChevronDown,
-  LogOut
+  ChevronDown
 } from "lucide-react";
 
 const NAV_LINKS = [
@@ -35,37 +34,14 @@ const NAV_LINKS = [
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user, isLoading, logout } = useAuth();
-
-  // Redirect to login if user is not authenticated
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.replace(`/login?redirect=${encodeURIComponent(pathname)}`);
-    }
-  }, [user, isLoading, router, pathname]);
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-[#F9F9F8] flex flex-col items-center justify-center">
-        <div className="w-12 h-12 rounded-lg bg-[#A86E18] flex items-center justify-center text-white font-serif font-bold text-xl shadow-md animate-pulse">
-          P
-        </div>
-      </div>
-    );
-  }
-
-  if (!user) {
-    return null;
-  }
-
-  const displayName = user?.name || "Tani";
+  const displayName = "Tani";
   const initials = displayName
     .split(" ")
     .map((n) => n[0])
@@ -169,17 +145,19 @@ export default function DashboardLayout({ children }) {
 
       {/* ================= MAIN CONTENT AREA ================= */}
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6 pb-20 lg:pb-12">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.16 }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
+        <WeatherProvider>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16 }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </WeatherProvider>
       </main>
 
       {/* ================= MOBILE MENU OVERLAY ================= */}
@@ -270,13 +248,6 @@ export default function DashboardLayout({ children }) {
                 >
                   + Add Garment
                 </Link>
-                <button
-                  onClick={logout}
-                  title="Sign Out"
-                  className="p-2 text-[#A8A29E] hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                >
-                  <LogOut size={18} />
-                </button>
               </div>
             </motion.div>
           </>

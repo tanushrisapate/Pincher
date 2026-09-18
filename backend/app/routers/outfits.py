@@ -31,16 +31,16 @@ async def recommend_outfits(
         return OutfitRecommendationResponse(
             success=True,
             weather_context={
-                "temperature": request.temperature or 22.0,
-                "condition": request.weather_condition or "Clear",
+                "temperature": request.temperature,
+                "condition": request.weather_condition,
                 "message": "No wardrobe items found. Please upload items first to get personalized outfit recommendations."
             },
             recommendations=[]
         )
 
     # 2. Run recommendation engine
-    temp = request.temperature if request.temperature is not None else 22.0
-    cond = request.weather_condition or "Clear"
+    temp = request.temperature
+    cond = request.weather_condition
     
     recommendations = generate_outfit_recommendations(
         wardrobe_items=items,

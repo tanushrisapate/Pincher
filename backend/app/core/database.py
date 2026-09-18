@@ -62,6 +62,10 @@ def init_db():
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
     );
 
+    INSERT INTO users (name, email, password_hash, persona)
+    VALUES ('Tani', 'tani@example.com', 'demo-user-no-password', 'classic')
+    ON CONFLICT (email) DO NOTHING;
+
     CREATE TABLE IF NOT EXISTS wardrobe_items (
         id SERIAL PRIMARY KEY,
         user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,

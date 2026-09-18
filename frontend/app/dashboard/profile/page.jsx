@@ -14,7 +14,6 @@ import {
   Mail,
   Lock,
   Bell,
-  LogOut,
   ChevronRight,
   Save,
   Info,
@@ -49,7 +48,7 @@ const OCCASIONS_LIST = ["College", "Work", "Casual", "Date", "Party", "Outdoor"]
 const STORAGE_KEY = "pincher_profile_preferences";
 
 export default function ProfilePage() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const displayName = user?.name || "Tani";
   const displayEmail = user?.email || "tani@example.com";
@@ -126,9 +125,11 @@ export default function ProfilePage() {
   // Load preferences from localStorage and backend on mount
   useEffect(() => {
     // 1. LocalStorage
+    let hasCachedPrefs = false;
     try {
       const cached = localStorage.getItem(STORAGE_KEY);
       if (cached) {
+        hasCachedPrefs = true;
         const parsed = JSON.parse(cached);
         if (parsed.selectedStyles) setSelectedStyles(parsed.selectedStyles);
         if (parsed.favoriteColors) setFavoriteColors(parsed.favoriteColors);
@@ -151,7 +152,7 @@ export default function ProfilePage() {
         const res = await fetch("/api/profile/preferences");
         if (res.ok) {
           const data = await res.json();
-          if (data.preferences && data.source === "db") {
+          if (!hasCachedPrefs && data.preferences && data.source === "db") {
             const p = data.preferences;
             if (p.selectedStyles) setSelectedStyles(p.selectedStyles);
             if (p.favoriteColors) setFavoriteColors(p.favoriteColors);
@@ -550,13 +551,6 @@ export default function ProfilePage() {
               <ChevronRight size={14} className="text-[#A8A29E]" />
             </button>
 
-            <button
-              onClick={logout}
-              className="w-full flex items-center gap-2.5 pt-3 border-t border-[#F5F5F4] text-xs font-semibold text-red-600 hover:text-red-700 transition-colors cursor-pointer"
-            >
-              <LogOut size={15} />
-              <span>Log Out</span>
-            </button>
           </div>
         </div>
 

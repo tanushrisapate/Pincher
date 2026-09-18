@@ -1,20 +1,17 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/app/lib/db';
-import { getAuthUser } from '@/app/lib/auth';
+import { getDemoUserId } from '@/app/lib/demoUser';
 
 // DELETE /api/wardrobe/[id] - Remove an item from user's wardrobe
 export async function DELETE(request, { params }) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser || !authUser.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const demoUserId = await getDemoUserId();
 
     const { id } = await params;
 
     const res = await query(
       'DELETE FROM wardrobe_items WHERE id = $1 AND user_id = $2 RETURNING id, name',
-      [id, authUser.userId]
+      [id, demoUserId]
     );
 
     if (res.rows.length === 0) {
@@ -41,10 +38,7 @@ export async function DELETE(request, { params }) {
 // PUT /api/wardrobe/[id] - Update item metadata
 export async function PUT(request, { params }) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser || !authUser.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const demoUserId = await getDemoUserId();
 
     const { id } = await params;
     const body = await request.json();
@@ -62,7 +56,7 @@ export async function PUT(request, { params }) {
            updated_at = CURRENT_TIMESTAMP
        WHERE id = $8 AND user_id = $9
        RETURNING *`,
-      [name, category, subcategory, color_hex, color_name, season, occasion, id, authUser.userId]
+      [name, category, subcategory, color_hex, color_name, season, occasion, id, demoUserId]
     );
 
     if (res.rows.length === 0) {

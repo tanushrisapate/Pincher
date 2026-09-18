@@ -1,162 +1,129 @@
 "use client";
 
-import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
-import { CloudRain, Palette, Shirt, ArrowRight, Upload, Sparkles, Smile } from "lucide-react";
+import { ArrowRight, Plus, SunMedium } from "lucide-react";
+import heroModel from "../assets/images/pincher-hero-model-hires.png";
+import cardigan from "../assets/images/pincher-cardigan.png";
+import trousers from "../assets/images/pincher-trousers.png";
+import handbag from "../assets/images/pincher-handbag.png";
+import sneakers from "../assets/images/pincher-sneakers.png";
+import sunglasses from "../assets/images/pincher-sunglasses.png";
+import styles from "./landing.module.css";
+
+const wardrobeItems = [
+  { src: cardigan, alt: "Cream knit cardigan" },
+  { src: trousers, alt: "Chocolate brown trousers" },
+  { src: handbag, alt: "Cognac leather handbag" },
+  { src: sneakers, alt: "White leather sneakers" },
+];
+
+const outfitItems = [
+  { src: cardigan, alt: "Cream knit sweater", className: styles.outfitMain },
+  { src: trousers, alt: "Brown wide-leg trousers", className: styles.outfitMain },
+  { src: sneakers, alt: "White leather sneakers", className: styles.outfitSmall },
+  { src: handbag, alt: "Brown leather handbag", className: styles.outfitSmall },
+  { src: sunglasses, alt: "Tortoiseshell sunglasses", className: styles.outfitSmall },
+];
+
+function ProductImage({ item }) {
+  return (
+    <div className={`${styles.productImage} ${item.className || ""}`}>
+      <Image src={item.src} alt={item.alt} fill sizes="(max-width: 800px) 28vw, 10vw" />
+    </div>
+  );
+}
 
 export default function Home() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-      },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.5,
-      },
-    },
-  };
-
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Animated background blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-light blob animate-float" style={{ animationDelay: '0s' }}></div>
-      <div className="absolute top-[20%] right-[-5%] w-[35%] h-[35%] bg-accent-sand blob animate-float" style={{ animationDelay: '1s' }}></div>
-      <div className="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] bg-accent-champagne blob animate-float" style={{ animationDelay: '2s' }}></div>
+    <main className={styles.landing}>
+      <section className={styles.hero} aria-label="Pincher personal styling">
+        <div className={styles.heroBackdrop} aria-hidden="true" />
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-6 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 backdrop-blur-sm border border-primary/20 text-primary-dark font-medium text-sm mb-8 shadow-sm">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>Meet your new personal stylist</span>
-          </div>
-          <h1 className="font-heading text-5xl md:text-7xl font-bold text-text-primary mb-6 leading-tight">
-            Your closet, <span className="text-primary">perfected</span>
-          </h1>
-          <p className="text-lg md:text-xl text-text-secondary max-w-2xl mx-auto mb-10">
-            Pincher takes the guesswork out of getting dressed. Smart, weather-aware, and color-coordinated outfits from the clothes you already own.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/signup" className="px-8 py-4 rounded-xl bg-primary hover:bg-primary-dark text-white font-medium transition-colors shadow-[0_4px_20px_rgba(184,134,11,0.25)] flex items-center gap-2">
-              Get Started <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link href="/login" className="px-8 py-4 rounded-xl bg-white/70 hover:bg-white backdrop-blur-sm text-text-primary font-medium transition-colors border border-border shadow-sm">
-              Login
-            </Link>
-          </div>
-        </motion.div>
-      </section>
+        <div className={styles.heroGrid}>
+          <div className={styles.copyColumn}>
+            <div className={styles.brand}>
+              <span className={styles.brandMark}>P</span>
+              <span className={styles.brandName}>PINCHER</span>
+              <span className={styles.brandRule} />
+              <span className={styles.brandTagline}>A SMARTER YOU</span>
+            </div>
 
-      {/* Features Section */}
-      <section className="relative py-24 px-6 z-10 bg-white/30 backdrop-blur-md border-y border-white/40">
-        <div className="max-w-7xl mx-auto">
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={containerVariants}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8"
-          >
-            {[
-              {
-                icon: CloudRain,
-                color: "text-accent-mint",
-                bg: "bg-accent-mint/20",
-                title: "Weather-Smart",
-                desc: "Never freeze or overheat again. Outfits curated for your exact local forecast."
-              },
-              {
-                icon: Palette,
-                color: "text-primary",
-                bg: "bg-primary/20",
-                title: "Color Harmony",
-                desc: "We analyze your items to find color combinations that effortlessly work together."
-              },
-              {
-                icon: Shirt,
-                color: "text-primary-dark",
-                bg: "bg-accent-sand/30",
-                title: "Your Real Clothes",
-                desc: "No impossible catalog models. Just real, stylish outfits using what's in your closet."
-              }
-            ].map((feature, i) => (
-              <motion.div key={i} variants={itemVariants} className="glass-card p-8 rounded-2xl flex flex-col items-center text-center">
-                <div className={`w-16 h-16 rounded-full ${feature.bg} ${feature.color} flex items-center justify-center mb-6`}>
-                  <feature.icon className="w-8 h-8" />
-                </div>
-                <h3 className="font-heading text-2xl font-semibold mb-3">{feature.title}</h3>
-                <p className="text-text-secondary">{feature.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
+            <div className={styles.copyContent}>
+              <p className={styles.eyebrow}>YOUR WARDROBE. A SMARTER YOU.</p>
+              <h1 className={styles.headline}>
+                <span>Outfits</span>
+                <span>that feel like</span>
+                <span className={styles.headlineAccent}>you.</span>
+              </h1>
+              <p className={styles.description}>
+                Pincher uses AI to style your real clothes —<br />
+                for your weather, your plans, and your unique style.
+              </p>
+              <div className={styles.actions}>
+                <Link href="/dashboard" className={styles.primaryAction}>
+                  Get Started <ArrowRight aria-hidden="true" />
+                </Link>
+                <Link href="/dashboard" className={styles.secondaryAction}>Login</Link>
+              </div>
+            </div>
+
+            <div className={styles.stats} aria-label="Pincher highlights">
+              <div className={styles.stat}><strong>10K+</strong><span>Happy Users</span></div>
+              <div className={styles.stat}><strong>4.8<span className={styles.star}>★</span></strong><span>App Rating</span></div>
+              <div className={styles.stat}><strong>Smarter</strong><span>Everyday Style</span></div>
+            </div>
+            <div className={styles.pageBadge} aria-hidden="true">1</div>
+          </div>
+
+          <div className={styles.modelColumn}>
+            <div className={styles.modelFrame}>
+              <Image
+                src={heroModel}
+                alt="Woman wearing an ivory sweater and brown trousers in a warm fashion interior"
+                fill
+                priority
+                unoptimized
+                sizes="(max-width: 900px) 100vw, 42vw"
+                className={styles.model}
+              />
+            </div>
+            <div className={`${styles.annotation} ${styles.annotationTop}`} aria-hidden="true">
+              <span>Smart clothes</span><span>that look</span><span>good on you</span><b>♡</b>
+            </div>
+            <svg className={styles.topArrow} viewBox="0 0 150 80" aria-hidden="true">
+              <path d="M3 64 C52 60 76 20 141 23" /><path d="M128 15 L142 23 L129 33" />
+            </svg>
+          </div>
+
+          <aside className={styles.cardsColumn} aria-label="Wardrobe preview">
+            <article className={`${styles.card} ${styles.wardrobeCard}`}>
+              <header className={styles.cardHeader}><strong>Your Wardrobe</strong><span>24 items</span></header>
+              <div className={styles.wardrobeRow}>
+                {wardrobeItems.map((item) => <ProductImage key={item.alt} item={item} />)}
+                <div className={styles.addButton} aria-label="Add wardrobe item"><Plus aria-hidden="true" /></div>
+              </div>
+            </article>
+
+            <article className={`${styles.card} ${styles.outfitCard}`}>
+              <header className={styles.cardHeader}>
+                <strong>Today&apos;s Outfit</strong>
+                <span className={styles.weather}><SunMedium aria-hidden="true" />24°C · Clear</span>
+              </header>
+              <div className={styles.outfitGrid}>
+                {outfitItems.map((item) => <ProductImage key={item.alt} item={item} />)}
+              </div>
+            </article>
+
+            <div className={`${styles.annotation} ${styles.annotationBottom}`} aria-hidden="true">
+              <span>Weather</span><span>Ready</span><span>Style</span><b>♡</b>
+            </div>
+            <svg className={styles.bottomArrow} viewBox="0 0 90 100" aria-hidden="true">
+              <path d="M3 8 C42 18 26 58 78 75" /><path d="M66 66 L79 76 L64 82" />
+            </svg>
+          </aside>
         </div>
       </section>
-
-      {/* How it Works Section */}
-      <section className="relative py-24 px-6 z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-heading text-4xl font-bold mb-16">How it works</h2>
-          
-          <motion.div 
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={containerVariants}
-            className="flex flex-col md:flex-row gap-12 relative"
-          >
-            <div className="hidden md:block absolute top-8 left-20 right-20 h-0.5 bg-border/50 -z-10"></div>
-            
-            {[
-              { step: 1, title: "Upload", desc: "Snap photos of your favorite pieces.", icon: Upload },
-              { step: 2, title: "Answer", desc: "Tell us your vibe and the day's plans.", icon: Smile },
-              { step: 3, title: "Wear", desc: "Get perfect outfit recommendations.", icon: Sparkles }
-            ].map((item, i) => (
-              <motion.div key={i} variants={itemVariants} className="flex-1 flex flex-col items-center relative">
-                <div className="w-16 h-16 rounded-full bg-white border-4 border-bg shadow-sm flex items-center justify-center text-xl font-bold text-primary mb-6">
-                  {item.step}
-                </div>
-                <h3 className="font-heading text-xl font-semibold mb-2">{item.title}</h3>
-                <p className="text-text-secondary">{item.desc}</p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="relative py-20 px-6 z-10">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="max-w-4xl mx-auto glass-card rounded-3xl p-12 text-center bg-primary/5 border-primary/10"
-        >
-          <h2 className="font-heading text-4xl font-bold mb-6">Ready to look amazing?</h2>
-          <p className="text-lg text-text-secondary mb-8">Join Pincher today and wake up to a perfectly planned outfit.</p>
-          <Link href="/signup" className="inline-block px-10 py-4 rounded-xl bg-text-primary text-white font-medium hover:bg-black transition-colors shadow-lg">
-            Start styling
-          </Link>
-        </motion.div>
-      </section>
-
-      {/* Footer */}
-      <footer className="py-8 text-center text-text-muted z-10 relative">
-        <p>© {new Date().getFullYear()} Pincher. Styled with 💖</p>
-      </footer>
-    </div>
+    </main>
   );
 }

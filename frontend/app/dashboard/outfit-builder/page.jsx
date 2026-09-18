@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, ArrowRight, Sun, Sparkles, Wand2, Compass } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useWeather } from "@/app/context/WeatherContext";
 
 const STEPS = 4;
 
@@ -39,30 +40,15 @@ const PREFERRED_PALETTES = [
 
 export default function OutfitBuilderPage() {
   const router = useRouter();
+  const { weather, status: weatherStatus, message: weatherMessage, refresh: refreshWeather } = useWeather();
   const [step, setStep] = useState(1);
   const [direction, setDirection] = useState(1);
-  const [weatherSnippet, setWeatherSnippet] = useState(null);
 
   // Form State
   const [occasion, setOccasion] = useState("daily");
   const [selectedPalette, setSelectedPalette] = useState("gold");
   const [formality, setFormality] = useState("smart");
   const [vibe, setVibe] = useState("classic");
-
-  useEffect(() => {
-    async function loadWeather() {
-      try {
-        const res = await fetch("/api/weather/current?lat=28.6139&lon=77.2090&city=Delhi");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data) setWeatherSnippet(data.data);
-        }
-      } catch (err) {
-        setWeatherSnippet({ temperature: 24, condition: "Pleasant" });
-      }
-    }
-    loadWeather();
-  }, []);
 
   const nextStep = () => {
     if (step < STEPS) {
@@ -258,16 +244,31 @@ export default function OutfitBuilderPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-8 pb-16">
       {/* Weather Bar */}
-      {weatherSnippet && (
-        <div className="bg-[#FAF8F5] border border-[#D4AF37]/30 text-[#1C1917] py-2.5 px-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-2xs">
+      <div className="bg-[#FAF8F5] border border-[#D4AF37]/30 text-[#1C1917] py-2.5 px-4 rounded-2xl flex items-center justify-between text-xs font-semibold shadow-2xs">
           <div className="flex items-center gap-2">
-            <Sun className="w-4 h-4 text-[#B8860B]" />
+            {weather ? <span aria-hidden="true">{weather.icon}</span> : <Sun className="w-4 h-4 text-[#B8860B]" />}
             <span>
-              Today in {weatherSnippet.city || "Delhi"}: {Math.round(weatherSnippet.temperature)}°C ({weatherSnippet.condition})
+              {weather
+                ? `Today in ${weather.locality || weather.city || "your area"}: ${Math.round(weather.temperature)}°C (${weather.condition})`
+                : weatherStatus.startsWith("loading")
+                  ? weatherMessage
+                  : "Local weather unavailable. Outfit styling is still available."}
             </span>
           </div>
-          <span className="text-[#8C6212] hidden sm:inline">AI adapts fabrics & layering automatically</span>
-        </div>
+          {weather
+            ? <span className="text-[#8C6212] hidden sm:inline">AI adapts fabrics & layering automatically</span>
+            : <button type="button" onClick={refreshWeather} disabled={weatherStatus.startsWith("loading")} className="text-[#8C6212] hover:underline disabled:opacity-50">
+              {weatherStatus.startsWith("loading") ? "Loading" : "Retry"}
+            </button>}
+      </div>
+      {weather && (
+        <p className="-mt-6 text-[10px] text-[#A8A29E] text-right">
+          Weather by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline">Open-Meteo</a>
+          {" · Location "}
+          <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="underline">
+            {weather.location_attribution || "© OpenStreetMap contributors"}
+          </a>
+        </p>
       )}
 
       {/* Progress Bar */}

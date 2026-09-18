@@ -27,9 +27,7 @@ export default function SavedPage() {
   const fetchSavedLooks = async () => {
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/api/outfits/saved", {
-        credentials: "include",
-      });
+      const res = await fetch("/api/outfits/saved");
       if (res.ok) {
         const data = await res.json();
         setSavedOutfits(data.outfits || []);
@@ -43,7 +41,7 @@ export default function SavedPage() {
 
   const handleDelete = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/outfits/${id}`, {
+      const res = await fetch(`/api/outfits/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -57,7 +55,7 @@ export default function SavedPage() {
 
   const handleToggleFavorite = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/api/outfits/${id}/favorite`, {
+      const res = await fetch(`/api/outfits/${id}/favorite`, {
         method: "PATCH",
         credentials: "include",
       });

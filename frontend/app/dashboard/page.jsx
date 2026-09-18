@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
+import { useWeather } from "@/app/context/WeatherContext";
 import {
   Sparkles,
   Plus,
@@ -10,17 +11,27 @@ import {
   Droplets,
   Wind,
   MapPin,
-  ChevronDown,
+  RefreshCw,
   Camera,
   Shirt,
   Bookmark,
   Palette
 } from "lucide-react";
 
+const WEATHER_STATUS_LABELS = {
+  denied: "Location permission denied",
+  "position-unavailable": "Location service unavailable",
+  timeout: "Location request timed out",
+  unavailable: "Location unavailable",
+  "weather-unavailable": "Weather service unavailable",
+  "backend-unavailable": "Backend unavailable",
+};
+
 export default function DashboardHome() {
   const { user } = useAuth();
+  const { weather, status: weatherStatus, message: weatherMessage, refresh: refreshWeather } = useWeather();
+  const weatherStatusLabel = WEATHER_STATUS_LABELS[weatherStatus] || "Weather unavailable";
   const [greeting, setGreeting] = useState("Good afternoon");
-  const [weather, setWeather] = useState(null);
   const [wardrobeItems, setWardrobeItems] = useState([]);
   const [savedCount, setSavedCount] = useState(3);
   const [loading, setLoading] = useState(true);
@@ -37,11 +48,6 @@ export default function DashboardHome() {
   useEffect(() => {
     async function loadDashboardData() {
       try {
-        const weatherPromise = fetch("/api/weather/current?lat=28.6139&lon=77.2090&city=Delhi")
-          .then((r) => r.json())
-          .then((d) => (d.success ? d.data : null))
-          .catch(() => null);
-
         const wardrobePromise = fetch("/api/wardrobe")
           .then((r) => r.json())
           .then((d) => (d.success ? d.items : []))
@@ -52,13 +58,11 @@ export default function DashboardHome() {
           .then((d) => (d.success ? d.outfits : []))
           .catch(() => []);
 
-        const [weatherData, items, savedOutfits] = await Promise.all([
-          weatherPromise,
+        const [items, savedOutfits] = await Promise.all([
           wardrobePromise,
           outfitsPromise,
         ]);
 
-        if (weatherData) setWeather(weatherData);
         if (items) setWardrobeItems(items);
         if (savedOutfits) setSavedCount(savedOutfits.length || 3);
       } catch (err) {
@@ -154,20 +158,21 @@ export default function DashboardHome() {
       </div>
 
       {/* 2. Weather Bar Card */}
-      <div className="bg-white border border-[#EEEEEE] rounded-2xl p-4 sm:px-6 sm:py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+      <div className="bg-white border border-[#EEEEEE] rounded-2xl p-4 sm:px-6 sm:py-4 flex flex-col gap-3 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         {/* Weather condition */}
         <div className="flex items-center gap-3">
-          <span className="text-2xl">☀️</span>
+          <span className="text-2xl" aria-hidden="true">{weather?.icon || (weatherStatus.startsWith("loading") ? "…" : "☁️")}</span>
           <div>
             <span className="text-[10px] text-[#737373] block leading-none mb-1 font-medium">
               Today
             </span>
             <div className="flex items-baseline gap-1.5">
               <span className="text-lg font-bold text-[#111111]">
-                {weather ? `${Math.round(weather.temperature)}°C` : "24°C"}
+                {weather ? `${Math.round(weather.temperature)}°C` : "—"}
               </span>
               <span className="text-xs text-[#737373]">
-                {weather?.condition || "Clear"}
+                {weather?.condition || (weatherStatus.startsWith("loading") ? weatherMessage : weatherStatusLabel)}
               </span>
             </div>
           </div>
@@ -178,7 +183,7 @@ export default function DashboardHome() {
         {/* Humidity */}
         <div className="flex items-center gap-2 text-xs text-[#525252] font-medium">
           <Droplets size={15} className="text-[#737373]" />
-          <span>Humidity {weather?.humidity || 45}%</span>
+          <span>Humidity {weather ? `${weather.humidity}%` : "—"}</span>
         </div>
 
         <div className="hidden sm:block h-7 w-px bg-[#EEEEEE]" />
@@ -186,17 +191,39 @@ export default function DashboardHome() {
         {/* Wind */}
         <div className="flex items-center gap-2 text-xs text-[#525252] font-medium">
           <Wind size={15} className="text-[#737373]" />
-          <span>Wind {weather?.wind_speed || 6} km/h</span>
+          <span>Wind {weather ? `${weather.wind_speed} km/h` : "—"}</span>
         </div>
 
         <div className="hidden sm:block h-7 w-px bg-[#EEEEEE]" />
 
-        {/* Location Dropdown */}
-        <div className="flex items-center gap-1 text-xs font-semibold text-[#111111] cursor-pointer hover:text-[#A86E18] transition-colors">
+        {/* Current location */}
+        <div className="flex items-center gap-1 text-xs font-semibold text-[#111111]" title={weather ? [weather.region, weather.country].filter(Boolean).join(", ") : weatherMessage}>
           <MapPin size={14} className="text-[#737373]" />
-          <span>Delhi</span>
-          <ChevronDown size={13} className="text-[#737373]" />
+          <span>{weather ? (weather.locality || weather.city || "Local area") : (weatherStatus === "loading-location" ? "Finding location…" : weatherStatus === "loading-weather" ? "Loading weather…" : weatherStatusLabel)}</span>
+          {weatherStatus !== "ready" && (
+            <button
+              type="button"
+              onClick={refreshWeather}
+              disabled={weatherStatus.startsWith("loading")}
+              className="ml-1 inline-flex items-center gap-1 text-[#A86E18] hover:underline"
+              aria-label="Retry location and weather"
+              title={weatherMessage || "Retry weather lookup"}
+            >
+              <RefreshCw size={12} className={weatherStatus.startsWith("loading") ? "animate-spin" : ""} />
+              <span>{weatherStatus.startsWith("loading") ? "Loading" : "Retry"}</span>
+            </button>
+          )}
         </div>
+        </div>
+        {weatherStatus === "ready" && (
+          <p className="text-[10px] text-[#A8A29E] text-right">
+            Weather by <a href="https://open-meteo.com/" target="_blank" rel="noreferrer" className="underline">Open-Meteo</a>
+            {" · Location "}
+            <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer" className="underline">
+              {weather.location_attribution || "© OpenStreetMap contributors"}
+            </a>
+          </p>
+        )}
       </div>
 
       {/* 3. Your Wardrobe Card */}

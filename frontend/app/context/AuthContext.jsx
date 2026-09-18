@@ -1,11 +1,11 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { DEMO_USER } from '@/app/lib/demoUserConstants';
 
 const AuthContext = createContext({
-  user: null,
-  isLoading: true,
+  user: DEMO_USER,
+  isLoading: false,
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
@@ -13,90 +13,33 @@ const AuthContext = createContext({
 });
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [user, setUser] = useState(DEMO_USER);
+  const [isLoading, setIsLoading] = useState(false);
 
   const refreshUser = useCallback(async () => {
-    try {
-      const res = await fetch('/api/auth/me', {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('Failed to fetch auth session:', error);
-      setUser(null);
-    } finally {
-      setIsLoading(false);
-    }
+    setUser(DEMO_USER);
+    setIsLoading(false);
+    return DEMO_USER;
   }, []);
 
   useEffect(() => {
-    refreshUser();
+    setUser(DEMO_USER);
+    setIsLoading(false);
   }, [refreshUser]);
 
   const login = async (email, password) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return { success: false, error: data.error || 'Failed to sign in' };
-      }
-
-      setUser(data.user);
-      return { success: true, user: data.user };
-    } catch (error) {
-      console.error('Login error:', error);
-      return { success: false, error: 'Network error or server unavailable' };
-    }
+    setUser(DEMO_USER);
+    return { success: true, user: DEMO_USER };
   };
 
   const signup = async (name, email, password, persona) => {
-    try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, persona }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        return { success: false, error: data.error || 'Failed to create account' };
-      }
-
-      setUser(data.user);
-      return { success: true, user: data.user };
-    } catch (error) {
-      console.error('Signup error:', error);
-      return { success: false, error: 'Network error or server unavailable' };
-    }
+    setUser(DEMO_USER);
+    return { success: true, user: DEMO_USER };
   };
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      setUser(null);
-      router.push('/login');
-    }
+    setUser(DEMO_USER);
+    return { success: true, user: DEMO_USER };
   };
 
   return (

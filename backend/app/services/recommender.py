@@ -82,8 +82,8 @@ def is_cold_safe_shoe(item: Dict[str, Any]) -> bool:
 def generate_outfit_recommendations(
     wardrobe_items: List[Dict[str, Any]],
     request: OutfitRecommendationRequest,
-    weather_temp: float = 22.0,
-    weather_condition: str = "Clear"
+    weather_temp: float,
+    weather_condition: str
 ) -> List[RecommendedOutfit]:
     """
     Condition-Based Outfit Packet & Set Generator Engine.

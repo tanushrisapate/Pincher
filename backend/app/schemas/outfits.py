@@ -6,8 +6,8 @@ from app.schemas.wardrobe import WardrobeItemResponse
 class OutfitRecommendationRequest(BaseModel):
     occasion: Optional[str] = "daily"
     day_of_week: Optional[str] = None
-    temperature: Optional[float] = None
-    weather_condition: Optional[str] = "Clear"
+    temperature: float
+    weather_condition: str
     preferred_color: Optional[str] = None
     avoid_color: Optional[str] = None
     persona: Optional[str] = None

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/app/lib/db';
-import { getAuthUser } from '@/app/lib/auth';
+import { getDemoUserId } from '@/app/lib/demoUser';
 
 const DEFAULT_PREFERENCES = {
   selectedStyles: ["Minimal", "Casual"],
@@ -55,20 +55,12 @@ async function ensureTable() {
 // GET /api/profile/preferences
 export async function GET(request) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser || !authUser.userId) {
-      return NextResponse.json({
-        success: true,
-        preferences: DEFAULT_PREFERENCES,
-        source: "default",
-      });
-    }
-
+    const demoUserId = await getDemoUserId();
     await ensureTable();
 
     const res = await query(
       `SELECT preferences FROM user_preferences WHERE user_id = $1`,
-      [authUser.userId]
+      [demoUserId]
     );
 
     if (res.rows.length > 0 && res.rows[0].preferences) {
@@ -97,19 +89,9 @@ export async function GET(request) {
 // POST /api/profile/preferences
 export async function POST(request) {
   try {
-    const authUser = getAuthUser(request);
     const body = await request.json();
     const preferences = body.preferences || body;
-
-    if (!authUser || !authUser.userId) {
-      // Return ok for guest/dev sessions
-      return NextResponse.json({
-        success: true,
-        preferences,
-        source: "memory",
-      });
-    }
-
+    const demoUserId = await getDemoUserId();
     await ensureTable();
 
     await query(
@@ -117,7 +99,7 @@ export async function POST(request) {
        VALUES ($1, $2, CURRENT_TIMESTAMP)
        ON CONFLICT (user_id)
        DO UPDATE SET preferences = $2, updated_at = CURRENT_TIMESTAMP`,
-      [authUser.userId, JSON.stringify(preferences)]
+      [demoUserId, JSON.stringify(preferences)]
     );
 
     return NextResponse.json({

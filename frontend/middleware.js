@@ -1,32 +1,7 @@
 import { NextResponse } from 'next/server';
 
-export function middleware(request) {
-  const { pathname } = request.nextUrl;
-  const token = request.cookies.get('pincher_token')?.value;
-
-  const isProtectedPath = pathname.startsWith('/dashboard');
-  const isAuthPath = pathname === '/login' || pathname === '/signup';
-
-  // If trying to access protected dashboard route without a session token
-  if (isProtectedPath && !token) {
-    const loginUrl = new URL('/login', request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
-  }
-
-  // If already authenticated and trying to access /login or /signup
-  if (isAuthPath && token) {
-    const dashboardUrl = new URL('/dashboard', request.url);
-    return NextResponse.redirect(dashboardUrl);
-  }
-
+export function middleware() {
+  // Pincher is a local prototype with a built-in demo user. All application
+  // routes are intentionally public so opening the dashboard never requires a session.
   return NextResponse.next();
 }
-
-export const config = {
-  matcher: [
-    '/dashboard/:path*',
-    '/login',
-    '/signup',
-  ],
-};

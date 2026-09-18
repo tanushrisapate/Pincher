@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     PGUSER: str = "postgres"
     PGPASSWORD: str = "Tanu2920#"
     PGDATABASE: str = "pincher_db"
+    REVERSE_GEOCODER_URL: str = "https://nominatim.openstreetmap.org/reverse"
 
     # Security
     JWT_SECRET: str = "pincher_super_secure_jwt_secret_key_2026_change_in_production"

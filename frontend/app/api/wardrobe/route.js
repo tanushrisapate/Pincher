@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server';
 import { query } from '@/app/lib/db';
-import { getAuthUser } from '@/app/lib/auth';
+import { getDemoUserId } from '@/app/lib/demoUser';
 
 // GET /api/wardrobe - Retrieve user's wardrobe items with optional filters
 export async function GET(request) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser || !authUser.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const demoUserId = await getDemoUserId();
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
@@ -16,7 +13,7 @@ export async function GET(request) {
     const search = searchParams.get('search');
 
     let sql = 'SELECT * FROM wardrobe_items WHERE user_id = $1';
-    const params = [authUser.userId];
+    const params = [demoUserId];
     let paramIndex = 2;
 
     if (category && category !== 'all') {
@@ -58,10 +55,7 @@ export async function GET(request) {
 // POST /api/wardrobe - Add a new wardrobe item
 export async function POST(request) {
   try {
-    const authUser = getAuthUser(request);
-    if (!authUser || !authUser.userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const demoUserId = await getDemoUserId();
 
     const body = await request.json();
     const {
@@ -95,7 +89,7 @@ export async function POST(request) {
     `;
 
     const res = await query(insertSql, [
-      authUser.userId,
+      demoUserId,
       name.trim(),
       category.toLowerCase(),
       subcategory ? subcategory.toLowerCase() : null,
